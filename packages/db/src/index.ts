@@ -1,0 +1,67 @@
+export { db } from "./client.js";
+export type { Db } from "./client.js";
+
+// Re-export drizzle-orm query utilities so consumers import from one source,
+// avoiding the NodeNext dual-resolution-mode type incompatibility.
+export {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  lte,
+  max,
+  min,
+  ne,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
+
+export {
+  cards,
+  courses,
+  courseStatusEnum,
+  courseDifficultyEnum,
+  cardTypeEnum,
+  enrollments,
+  enrollmentStatusEnum,
+  examResultEnum,
+  goalTypeEnum,
+  mockExamAnswers,
+  mockExamSessions,
+  mockExamStatusEnum,
+  modules,
+  notificationChannelEnum,
+  notificationJobs,
+  notificationJobStatusEnum,
+  reviewEvents,
+  users,
+} from "./schema.js";
+
+export type {
+  DbCard,
+  DbCourse,
+  DbEnrollment,
+  DbMockExamAnswer,
+  DbMockExamSession,
+  DbModule,
+  DbNotificationJob,
+  DbReviewEvent,
+  DbUser,
+  NewDbCard,
+  NewDbCourse,
+  NewDbEnrollment,
+  NewDbMockExamAnswer,
+  NewDbMockExamSession,
+  NewDbModule,
+  NewDbNotificationJob,
+  NewDbReviewEvent,
+  NewDbUser,
+} from "./schema.js";
