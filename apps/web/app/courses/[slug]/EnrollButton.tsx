@@ -47,8 +47,10 @@ export function EnrollButton({ courseId }: EnrollButtonProps) {
     }
 
     void checkEnrollment();
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, courseId]);
 
   if (!isSignedIn) {
@@ -63,9 +65,7 @@ export function EnrollButton({ courseId }: EnrollButtonProps) {
   }
 
   if (state === "checking") {
-    return (
-      <div className="h-11 w-48 animate-pulse rounded-md bg-gray-200" aria-label="Loading…" />
-    );
+    return <div className="h-11 w-48 animate-pulse rounded-md bg-gray-200" aria-label="Loading…" />;
   }
 
   if (state === "success" && enrollmentId) {
@@ -73,10 +73,10 @@ export function EnrollButton({ courseId }: EnrollButtonProps) {
       <div className="rounded-md border border-indigo-200 bg-indigo-50 px-6 py-5">
         <p className="mb-3 font-medium text-indigo-900">You&rsquo;re enrolled in this course.</p>
         <a
-          href={`/session/${enrollmentId}`}
+          href={`/learn/${enrollmentId}`}
           className="inline-block rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700"
         >
-          Continue your session
+          Go to my dashboard
         </a>
       </div>
     );
@@ -122,13 +122,13 @@ export function EnrollButton({ courseId }: EnrollButtonProps) {
         <div className="rounded-md border border-green-200 bg-green-50 px-6 py-5">
           <p className="mb-3 font-medium text-green-800">You&rsquo;re enrolled!</p>
           <a
-            href={`/session/${enrollmentId}`}
+            href={`/learn/${enrollmentId}`}
             className="inline-block rounded-md bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700"
           >
-            Start learning now
+            Go to my dashboard
           </a>
           <p className="mt-3 text-sm text-green-700">
-            Or we&rsquo;ll email you a link in a few minutes if you&rsquo;d rather start later.
+            Or we&rsquo;ll email you a link when your first session is ready.
           </p>
         </div>
       ) : (
@@ -140,9 +140,7 @@ export function EnrollButton({ courseId }: EnrollButtonProps) {
           >
             {state === "loading" ? "Enrolling…" : "Enroll and start learning"}
           </button>
-          {state === "error" && errorMsg && (
-            <p className="mt-2 text-sm text-red-600">{errorMsg}</p>
-          )}
+          {state === "error" && errorMsg && <p className="mt-2 text-sm text-red-600">{errorMsg}</p>}
         </>
       )}
     </div>

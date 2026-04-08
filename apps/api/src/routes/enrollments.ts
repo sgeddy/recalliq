@@ -617,4 +617,232 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
       await reply.status(200).send({ data: { ok: true, result } });
     },
   );
+
+  // GET /enrollments/:id/dashboard
+  // Returns a full aggregated view of the enrollment for the learner dashboard:
+  // overall stats, per-domain breakdown, session history, upcoming schedule, per-card stats.
+  fastify.get(
+    "/enrollments/:id/dashboard",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const { id } = parseParams(request, enrollmentIdSchema);
+      const clerkId = request.userId as string;
+
+      const [userRow] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.clerkId, clerkId))
+        .limit(1);
+
+      if (!userRow) {
+        throw Object.assign(new Error("User not found"), { statusCode: 404 });
+      }
+
+      const [enrollment] = await db
+        .select()
+        .from(enrollments)
+        .where(and(eq(enrollments.id, id), eq(enrollments.userId, userRow.id)))
+        .limit(1);
+
+      if (!enrollment) {
+        throw Object.assign(new Error("Enrollment not found"), { statusCode: 404 });
+      }
+
+      const [course] = await db
+        .select({
+          title: courses.title,
+          slug: courses.slug,
+          defaultIntervals: courses.defaultIntervals,
+        })
+        .from(courses)
+        .where(eq(courses.id, enrollment.courseId))
+        .limit(1);
+
+      // One query: all review events for this enrollment joined with card + module.
+      // Aggregation happens in TypeScript — simpler than many SQL subqueries and
+      // well within acceptable memory for per-user event counts.
+      const allEvents = await db
+        .select({
+          reviewEventId: reviewEvents.id,
+          cardId: reviewEvents.cardId,
+          intervalIndex: reviewEvents.intervalIndex,
+          scheduledAt: reviewEvents.scheduledAt,
+          completedAt: reviewEvents.completedAt,
+          passed: reviewEvents.passed,
+          cardFront: cards.front,
+          cardType: cards.type,
+          moduleId: modules.id,
+          moduleName: modules.title,
+          modulePosition: modules.position,
+        })
+        .from(reviewEvents)
+        .innerJoin(cards, eq(cards.id, reviewEvents.cardId))
+        .innerJoin(modules, eq(modules.id, cards.moduleId))
+        .where(eq(reviewEvents.enrollmentId, id));
+
+      const now = new Date();
+
+      // ── Overall stats ────────────────────────────────────────────────────
+      const completedEvents = allEvents.filter((e) => e.completedAt !== null);
+      const uniqueCardIds = new Set(allEvents.map((e) => e.cardId));
+      const attemptedCardIds = new Set(completedEvents.map((e) => e.cardId));
+      const correctReviews = completedEvents.filter((e) => e.passed === true).length;
+      const incorrectReviews = completedEvents.filter((e) => e.passed === false).length;
+
+      // ── Per-domain breakdown ─────────────────────────────────────────────
+      const moduleMap = new Map<
+        string,
+        {
+          moduleId: string;
+          moduleName: string;
+          modulePosition: number;
+          cardIds: Set<string>;
+          attemptedCardIds: Set<string>;
+          correctReviews: number;
+          totalReviews: number;
+        }
+      >();
+
+      for (const event of allEvents) {
+        let m = moduleMap.get(event.moduleId);
+        if (!m) {
+          m = {
+            moduleId: event.moduleId,
+            moduleName: event.moduleName,
+            modulePosition: event.modulePosition,
+            cardIds: new Set(),
+            attemptedCardIds: new Set(),
+            correctReviews: 0,
+            totalReviews: 0,
+          };
+          moduleMap.set(event.moduleId, m);
+        }
+        m.cardIds.add(event.cardId);
+        if (event.completedAt !== null) {
+          m.attemptedCardIds.add(event.cardId);
+          m.totalReviews++;
+          if (event.passed === true) m.correctReviews++;
+        }
+      }
+
+      const domains = [...moduleMap.values()]
+        .sort((a, b) => a.modulePosition - b.modulePosition)
+        .map((m) => ({
+          moduleId: m.moduleId,
+          moduleName: m.moduleName,
+          modulePosition: m.modulePosition,
+          totalCards: m.cardIds.size,
+          attemptedCards: m.attemptedCardIds.size,
+          correctReviews: m.correctReviews,
+          totalReviews: m.totalReviews,
+        }));
+
+      // ── Session history (group completed events by UTC date of completedAt) ──
+      const sessionDateMap = new Map<string, { reviewed: number; correct: number }>();
+      for (const event of completedEvents) {
+        const date = event.completedAt!.toISOString().split("T")[0]!;
+        const s = sessionDateMap.get(date) ?? { reviewed: 0, correct: 0 };
+        s.reviewed++;
+        if (event.passed === true) s.correct++;
+        sessionDateMap.set(date, s);
+      }
+      const pastSessions = [...sessionDateMap.entries()]
+        .map(([date, s]) => ({ date, reviewed: s.reviewed, correct: s.correct }))
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      // ── Upcoming sessions (group future pending events by scheduledAt date) ──
+      const upcomingDateMap = new Map<string, number>();
+      for (const event of allEvents) {
+        if (event.completedAt === null && event.scheduledAt > now) {
+          const date = event.scheduledAt.toISOString().split("T")[0]!;
+          upcomingDateMap.set(date, (upcomingDateMap.get(date) ?? 0) + 1);
+        }
+      }
+      const upcomingSessions = [...upcomingDateMap.entries()]
+        .map(([date, cardCount]) => ({ date, cardCount }))
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 10);
+
+      // ── Per-card stats ────────────────────────────────────────────────────
+      const cardStatsMap = new Map<
+        string,
+        {
+          cardId: string;
+          moduleId: string;
+          moduleName: string;
+          front: string;
+          cardType: string;
+          attempts: number;
+          correct: number;
+          currentIntervalIndex: number;
+          nextDueAt: string | null;
+        }
+      >();
+
+      for (const event of allEvents) {
+        let c = cardStatsMap.get(event.cardId);
+        if (!c) {
+          c = {
+            cardId: event.cardId,
+            moduleId: event.moduleId,
+            moduleName: event.moduleName,
+            front: event.cardFront,
+            cardType: event.cardType,
+            attempts: 0,
+            correct: 0,
+            currentIntervalIndex: 0,
+            nextDueAt: null,
+          };
+          cardStatsMap.set(event.cardId, c);
+        }
+        if (event.completedAt !== null) {
+          c.attempts++;
+          if (event.passed === true) c.correct++;
+          if (event.intervalIndex > c.currentIntervalIndex) {
+            c.currentIntervalIndex = event.intervalIndex;
+          }
+        } else if (event.scheduledAt >= now) {
+          if (!c.nextDueAt || event.scheduledAt.toISOString() < c.nextDueAt) {
+            c.nextDueAt = event.scheduledAt.toISOString();
+          }
+        }
+      }
+
+      const cardStats = [...cardStatsMap.values()];
+
+      // Check if there are cards due today (for "Start session" CTA)
+      const hasDueCards = allEvents.some((e) => e.completedAt === null && e.scheduledAt <= now);
+
+      await reply.status(200).send({
+        data: {
+          enrollment: {
+            id: enrollment.id,
+            status: enrollment.status,
+            createdAt: enrollment.createdAt,
+            examDate: enrollment.examDate,
+            examResult: enrollment.examResult,
+          },
+          course: {
+            title: course?.title ?? "",
+            slug: course?.slug ?? "",
+            defaultIntervals: course?.defaultIntervals ?? [],
+          },
+          stats: {
+            totalCards: uniqueCardIds.size,
+            attemptedCards: attemptedCardIds.size,
+            totalReviews: completedEvents.length,
+            correctReviews,
+            incorrectReviews,
+            hasDueCards,
+          },
+          domains,
+          sessions: {
+            past: pastSessions,
+            upcoming: upcomingSessions,
+          },
+          cards: cardStats,
+        },
+      });
+    },
+  );
 };

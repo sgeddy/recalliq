@@ -88,10 +88,10 @@ export default async function SessionPage({ params }: PageProps) {
             No cards are due for <strong>{session.courseTitle}</strong> right now. Check back later.
           </p>
           <a
-            href="/courses"
+            href={`/learn/${params.enrollmentId}`}
             className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white hover:bg-indigo-700"
           >
-            Back to courses
+            Back to my dashboard
           </a>
         </div>
       </main>
