@@ -7,6 +7,7 @@ import {
   count,
   courses,
   db,
+  desc,
   enrollments,
   eq,
   isNull,
@@ -15,6 +16,7 @@ import {
   modules,
   notificationJobs,
   reviewEvents,
+  sql,
   users,
 } from "@recalliq/db";
 
@@ -114,6 +116,46 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.status(200).send({
       data: enrollment ? { enrollmentId: enrollment.id } : null,
     });
+  });
+
+  // GET /enrollments
+  // Lists all active enrollments for the authenticated user with per-enrollment
+  // progress stats computed in a single aggregated query.
+  fastify.get("/enrollments", { preHandler: [requireAuth] }, async (request, reply) => {
+    const clerkId = request.userId as string;
+
+    const [userRow] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.clerkId, clerkId))
+      .limit(1);
+
+    if (!userRow) {
+      return reply.status(200).send({ data: [] });
+    }
+
+    const rows = await db
+      .select({
+        id: enrollments.id,
+        status: enrollments.status,
+        createdAt: enrollments.createdAt,
+        examDate: enrollments.examDate,
+        courseId: enrollments.courseId,
+        courseTitle: courses.title,
+        courseSlug: courses.slug,
+        totalCards: sql<number>`COUNT(DISTINCT ${reviewEvents.cardId})`,
+        attemptedCards: sql<number>`COUNT(DISTINCT CASE WHEN ${reviewEvents.completedAt} IS NOT NULL THEN ${reviewEvents.cardId} END)`,
+        hasDueCards: sql<boolean>`BOOL_OR(${reviewEvents.completedAt} IS NULL AND ${reviewEvents.scheduledAt} <= NOW())`,
+        nextSessionAt: sql<Date | null>`MIN(CASE WHEN ${reviewEvents.completedAt} IS NULL AND ${reviewEvents.scheduledAt} > NOW() THEN ${reviewEvents.scheduledAt} END)`,
+      })
+      .from(enrollments)
+      .innerJoin(courses, eq(courses.id, enrollments.courseId))
+      .leftJoin(reviewEvents, eq(reviewEvents.enrollmentId, enrollments.id))
+      .where(eq(enrollments.userId, userRow.id))
+      .groupBy(enrollments.id, courses.id)
+      .orderBy(desc(enrollments.createdAt));
+
+    return reply.status(200).send({ data: rows });
   });
 
   // POST /enrollments

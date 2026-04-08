@@ -16,7 +16,7 @@
     "@anthropic-ai/sdk": "^0.82.0",
     "@clerk/fastify": "^1.0.0",
     "@fastify/cors": "^9.0.0",
-    "@fastify/websocket": "^11.2.0",
+    "@fastify/websocket": "^8.3.1",
     "@recalliq/db": "workspace:*",
     "@recalliq/srs-engine": "workspace:*",
     "@recalliq/types": "workspace:*",
