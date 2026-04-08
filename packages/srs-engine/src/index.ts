@@ -12,3 +12,6 @@ export type {
   MaintenanceInterval,
   MaintenancePlan,
 } from "./retention-plan.js";
+
+export { computePreparednessScore, preparednessLabel } from "./preparedness.js";
+export type { CardStatsForPreparedness, DomainStatsForPreparedness } from "./preparedness.js";

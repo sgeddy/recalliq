@@ -15,9 +15,10 @@ interface EnrollmentSummary {
   courseTitle: string;
   courseSlug: string;
   totalCards: number;
-  attemptedCards: number;
+  completedReviews: number;
   hasDueCards: boolean;
   nextSessionAt: string | null;
+  preparednessScore: number;
 }
 
 async function fetchEnrollments(authToken: string): Promise<EnrollmentSummary[]> {
@@ -28,6 +29,21 @@ async function fetchEnrollments(authToken: string): Promise<EnrollmentSummary[]>
   if (!res.ok) return [];
   const json = (await res.json()) as { data: EnrollmentSummary[] };
   return json.data;
+}
+
+function preparednessDisplay(score: number): { label: string; colorClass: string } {
+  if (score >= 90) return { label: "Exam-ready", colorClass: "text-indigo-700" };
+  if (score >= 75) return { label: "Solid", colorClass: "text-green-700" };
+  if (score >= 50) return { label: "Building", colorClass: "text-amber-700" };
+  return { label: "Beginner", colorClass: "text-red-700" };
+}
+
+function barColorClass(score: number): string {
+  if (score >= 90) return "bg-indigo-500";
+  if (score >= 75) return "bg-green-500";
+  if (score >= 50) return "bg-amber-500";
+  if (score > 0) return "bg-red-400";
+  return "bg-gray-200";
 }
 
 function fmtDate(iso: string): string {
@@ -77,7 +93,7 @@ export default async function DashboardPage() {
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {enrollments.map((e) => {
-            const pct = e.totalCards > 0 ? Math.round((e.attemptedCards / e.totalCards) * 100) : 0;
+            const { label, colorClass } = preparednessDisplay(e.preparednessScore);
 
             return (
               <li key={e.id}>
@@ -102,18 +118,20 @@ export default async function DashboardPage() {
                     )}
                   </div>
 
-                  {/* Progress */}
+                  {/* Preparedness score */}
                   <div className="mb-4">
                     <div className="mb-1.5 flex justify-between text-xs text-gray-500">
-                      <span>
-                        {e.attemptedCards} / {e.totalCards} questions attempted
+                      <span>Preparedness</span>
+                      <span className={`font-semibold ${colorClass}`}>
+                        {e.preparednessScore > 0
+                          ? `${e.preparednessScore}% · ${label}`
+                          : "Not started"}
                       </span>
-                      <span className="font-medium">{pct}%</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="h-2 rounded-full bg-indigo-500 transition-all"
-                        style={{ width: `${pct}%` }}
+                        className={`h-2 rounded-full transition-all ${barColorClass(e.preparednessScore)}`}
+                        style={{ width: `${e.preparednessScore}%` }}
                       />
                     </div>
                   </div>

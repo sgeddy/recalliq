@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-import { count, eq } from "drizzle-orm";
+import { count, eq, inArray } from "drizzle-orm";
 
 import { cards, courses, modules } from "../src/schema.js";
 
@@ -86,18 +86,45 @@ async function seed(): Promise<void> {
 
   console.info(`Upserted course: ${course!.id}`);
 
-  // Skip module/card insertion if already seeded — modules have no unique constraint
-  // beyond their primary key, so onConflictDoNothing cannot detect duplicates.
-  const [{ existingCount }] = await db
-    .select({ existingCount: count() })
+  const expectedCardCount = fixture.modules.reduce((s, m) => s + m.cards.length, 0);
+
+  const [{ existingModuleCount }] = await db
+    .select({ existingModuleCount: count() })
     .from(modules)
     .where(eq(modules.courseId, course!.id));
 
-  if (existingCount > 0) {
-    console.info(`Modules already seeded for "${fixture.course.slug}" — skipping.`);
-    console.info("Seed complete.");
-    await pool.end();
-    return;
+  if (existingModuleCount > 0) {
+    // Compare actual card count against the fixture to detect stale seeds.
+    const existingModuleRows = await db
+      .select({ id: modules.id })
+      .from(modules)
+      .where(eq(modules.courseId, course!.id));
+    const moduleIds = existingModuleRows.map((m) => m.id);
+    const [{ existingCardCount }] = await db
+      .select({ existingCardCount: count() })
+      .from(cards)
+      .where(inArray(cards.moduleId, moduleIds));
+
+    if (existingCardCount === expectedCardCount) {
+      console.info(`Already seeded correctly (${existingCardCount} cards) — skipping.`);
+      console.info("Seed complete.");
+      await pool.end();
+      return;
+    }
+
+    if (process.env["FORCE_RESEED"] !== "true") {
+      console.warn(
+        `Card count mismatch: DB has ${existingCardCount}, fixture has ${expectedCardCount}.`,
+      );
+      console.warn(`Re-run with FORCE_RESEED=true to delete and re-seed.`);
+      await pool.end();
+      return;
+    }
+
+    console.info(
+      `FORCE_RESEED: deleting ${existingModuleCount} modules (${existingCardCount} cards) and re-seeding.`,
+    );
+    await db.delete(modules).where(eq(modules.courseId, course!.id));
   }
 
   for (const seedModule of fixture.modules) {

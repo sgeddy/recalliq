@@ -10,6 +10,7 @@ import {
   desc,
   enrollments,
   eq,
+  inArray,
   isNull,
   lte,
   min,
@@ -21,6 +22,9 @@ import {
 } from "@recalliq/db";
 
 import { createClerkClient } from "@clerk/fastify";
+
+import { computePreparednessScore } from "@recalliq/srs-engine";
+import { certConfigs } from "@recalliq/types";
 
 import { buildRequireAuth } from "../plugins/clerk-auth.js";
 import { parseBody, parseParams, parseQuery } from "../plugins/zod-validator.js";
@@ -119,8 +123,9 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // GET /enrollments
-  // Lists all active enrollments for the authenticated user with per-enrollment
-  // progress stats computed in a single aggregated query.
+  // Lists all enrollments for the authenticated user. Fetches all review events
+  // in a single query and aggregates per-enrollment stats + preparedness score
+  // in TypeScript (simpler than equivalent SQL window functions).
   fastify.get("/enrollments", { preHandler: [requireAuth] }, async (request, reply) => {
     const clerkId = request.userId as string;
 
@@ -134,7 +139,8 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(200).send({ data: [] });
     }
 
-    const rows = await db
+    // Step 1: all enrollments with course metadata.
+    const enrollmentRows = await db
       .select({
         id: enrollments.id,
         status: enrollments.status,
@@ -143,19 +149,136 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
         courseId: enrollments.courseId,
         courseTitle: courses.title,
         courseSlug: courses.slug,
-        totalCards: sql<number>`COUNT(DISTINCT ${reviewEvents.cardId})`,
-        attemptedCards: sql<number>`COUNT(DISTINCT CASE WHEN ${reviewEvents.completedAt} IS NOT NULL THEN ${reviewEvents.cardId} END)`,
-        hasDueCards: sql<boolean>`BOOL_OR(${reviewEvents.completedAt} IS NULL AND ${reviewEvents.scheduledAt} <= NOW())`,
-        nextSessionAt: sql<Date | null>`MIN(CASE WHEN ${reviewEvents.completedAt} IS NULL AND ${reviewEvents.scheduledAt} > NOW() THEN ${reviewEvents.scheduledAt} END)`,
+        defaultIntervals: courses.defaultIntervals,
       })
       .from(enrollments)
       .innerJoin(courses, eq(courses.id, enrollments.courseId))
-      .leftJoin(reviewEvents, eq(reviewEvents.enrollmentId, enrollments.id))
       .where(eq(enrollments.userId, userRow.id))
-      .groupBy(enrollments.id, courses.id)
       .orderBy(desc(enrollments.createdAt));
 
-    return reply.status(200).send({ data: rows });
+    if (enrollmentRows.length === 0) {
+      return reply.status(200).send({ data: [] });
+    }
+
+    const enrollmentIds = enrollmentRows.map((e) => e.id);
+
+    // Step 2: all review events for those enrollments in one query.
+    const allEvents = await db
+      .select({
+        enrollmentId: reviewEvents.enrollmentId,
+        cardId: reviewEvents.cardId,
+        intervalIndex: reviewEvents.intervalIndex,
+        scheduledAt: reviewEvents.scheduledAt,
+        completedAt: reviewEvents.completedAt,
+        passed: reviewEvents.passed,
+        moduleId: modules.id,
+        modulePosition: modules.position,
+      })
+      .from(reviewEvents)
+      .innerJoin(cards, eq(cards.id, reviewEvents.cardId))
+      .innerJoin(modules, eq(modules.id, cards.moduleId))
+      .where(inArray(reviewEvents.enrollmentId, enrollmentIds));
+
+    const now = new Date();
+
+    // Step 3: aggregate per enrollment.
+    const result = enrollmentRows.map((enrollment) => {
+      const events = allEvents.filter((e) => e.enrollmentId === enrollment.id);
+      const completedEvents = events.filter((e) => e.completedAt !== null);
+      const uniqueCardIds = new Set(events.map((e) => e.cardId));
+
+      const hasDueCards = events.some((e) => e.completedAt === null && e.scheduledAt <= now);
+      const nextSessionAt =
+        events
+          .filter((e) => e.completedAt === null && e.scheduledAt > now)
+          .map((e) => e.scheduledAt)
+          .sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
+
+      // Build per-card stats keyed by cardId for preparedness computation.
+      const cardMap = new Map<
+        string,
+        {
+          modulePosition: number;
+          intervalIndex: number;
+          attempts: number;
+          correct: number;
+          lastReviewedAt: Date | null;
+        }
+      >();
+
+      for (const event of events) {
+        let c = cardMap.get(event.cardId);
+        if (!c) {
+          c = {
+            modulePosition: event.modulePosition,
+            intervalIndex: 0,
+            attempts: 0,
+            correct: 0,
+            lastReviewedAt: null,
+          };
+          cardMap.set(event.cardId, c);
+        }
+        if (event.completedAt !== null) {
+          c.attempts++;
+          if (event.passed === true) c.correct++;
+          if (event.intervalIndex > c.intervalIndex) c.intervalIndex = event.intervalIndex;
+          if (!c.lastReviewedAt || event.completedAt > c.lastReviewedAt) {
+            c.lastReviewedAt = event.completedAt;
+          }
+        }
+      }
+
+      // Group cards by module position → domain for preparedness.
+      const certConfig = certConfigs[enrollment.courseSlug];
+      const domainMap = new Map<
+        number,
+        {
+          weightPercent: number;
+          cards: typeof cardMap extends Map<string, infer V> ? V[] : never[];
+        }
+      >();
+
+      for (const [, card] of cardMap) {
+        let domain = domainMap.get(card.modulePosition);
+        if (!domain) {
+          const weight = certConfig?.domains[card.modulePosition - 1]?.weightPercent ?? null;
+          domain = { weightPercent: weight ?? 0, cards: [] };
+          domainMap.set(card.modulePosition, domain);
+        }
+        domain.cards.push(card);
+      }
+
+      // Equal weight fallback when no cert config weights are available.
+      const domainArray = [...domainMap.values()];
+      const hasWeights = domainArray.some((d) => d.weightPercent > 0);
+      if (!hasWeights && domainArray.length > 0) {
+        const equalWeight = 100 / domainArray.length;
+        for (const d of domainArray) d.weightPercent = equalWeight;
+      }
+
+      const preparednessScore = computePreparednessScore(
+        domainArray,
+        enrollment.defaultIntervals,
+        now,
+      );
+
+      return {
+        id: enrollment.id,
+        status: enrollment.status,
+        createdAt: enrollment.createdAt,
+        examDate: enrollment.examDate,
+        courseId: enrollment.courseId,
+        courseTitle: enrollment.courseTitle,
+        courseSlug: enrollment.courseSlug,
+        totalCards: uniqueCardIds.size,
+        completedReviews: completedEvents.length,
+        hasDueCards,
+        nextSessionAt,
+        preparednessScore,
+      };
+    });
+
+    return reply.status(200).send({ data: result });
   });
 
   // POST /enrollments
@@ -198,6 +321,23 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
         .where(eq(users.id, user.id))
         .returning();
       user = updated[0]!;
+    }
+
+    // Return existing active enrollment rather than creating a duplicate.
+    const [existing] = await db
+      .select({ id: enrollments.id })
+      .from(enrollments)
+      .where(
+        and(
+          eq(enrollments.userId, user.id),
+          eq(enrollments.courseId, course.id),
+          eq(enrollments.status, "active"),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      return reply.status(200).send({ data: { id: existing.id } });
     }
 
     // Create the enrollment
@@ -812,11 +952,13 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
           cardId: string;
           moduleId: string;
           moduleName: string;
+          modulePosition: number;
           front: string;
           cardType: string;
           attempts: number;
           correct: number;
           currentIntervalIndex: number;
+          lastReviewedAt: Date | null;
           nextDueAt: string | null;
         }
       >();
@@ -828,11 +970,13 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
             cardId: event.cardId,
             moduleId: event.moduleId,
             moduleName: event.moduleName,
+            modulePosition: event.modulePosition,
             front: event.cardFront,
             cardType: event.cardType,
             attempts: 0,
             correct: 0,
             currentIntervalIndex: 0,
+            lastReviewedAt: null,
             nextDueAt: null,
           };
           cardStatsMap.set(event.cardId, c);
@@ -843,6 +987,9 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
           if (event.intervalIndex > c.currentIntervalIndex) {
             c.currentIntervalIndex = event.intervalIndex;
           }
+          if (!c.lastReviewedAt || event.completedAt > c.lastReviewedAt) {
+            c.lastReviewedAt = event.completedAt;
+          }
         } else if (event.scheduledAt >= now) {
           if (!c.nextDueAt || event.scheduledAt.toISOString() < c.nextDueAt) {
             c.nextDueAt = event.scheduledAt.toISOString();
@@ -852,8 +999,56 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
 
       const cardStats = [...cardStatsMap.values()];
 
+      // ── Preparedness score ────────────────────────────────────────────────
+      const certConfig = certConfigs[course?.slug ?? ""];
+      const domainMap = new Map<
+        number,
+        {
+          weightPercent: number;
+          cards: {
+            intervalIndex: number;
+            attempts: number;
+            correct: number;
+            lastReviewedAt: Date | null;
+          }[];
+        }
+      >();
+
+      for (const c of cardStats) {
+        let d = domainMap.get(c.modulePosition);
+        if (!d) {
+          const weight = certConfig?.domains[c.modulePosition - 1]?.weightPercent ?? null;
+          d = { weightPercent: weight ?? 0, cards: [] };
+          domainMap.set(c.modulePosition, d);
+        }
+        d.cards.push({
+          intervalIndex: c.currentIntervalIndex,
+          attempts: c.attempts,
+          correct: c.correct,
+          lastReviewedAt: c.lastReviewedAt,
+        });
+      }
+
+      const domainArray = [...domainMap.values()];
+      const hasWeights = domainArray.some((d) => d.weightPercent > 0);
+      if (!hasWeights && domainArray.length > 0) {
+        const equalWeight = 100 / domainArray.length;
+        for (const d of domainArray) d.weightPercent = equalWeight;
+      }
+
+      const preparednessScore = computePreparednessScore(
+        domainArray,
+        course?.defaultIntervals ?? [],
+        now,
+      );
+
       // Check if there are cards due today (for "Start session" CTA)
       const hasDueCards = allEvents.some((e) => e.completedAt === null && e.scheduledAt <= now);
+
+      // Strip internal fields before sending to client.
+      const clientCardStats = cardStats.map(
+        ({ modulePosition: _p, lastReviewedAt: _r, ...rest }) => rest,
+      );
 
       await reply.status(200).send({
         data: {
@@ -876,13 +1071,14 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
             correctReviews,
             incorrectReviews,
             hasDueCards,
+            preparednessScore,
           },
           domains,
           sessions: {
             past: pastSessions,
             upcoming: upcomingSessions,
           },
-          cards: cardStats,
+          cards: clientCardStats,
         },
       });
     },

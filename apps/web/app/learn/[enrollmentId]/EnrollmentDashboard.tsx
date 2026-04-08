@@ -49,6 +49,7 @@ export interface DashboardData {
     correctReviews: number;
     incorrectReviews: number;
     hasDueCards: boolean;
+    preparednessScore: number;
   };
   domains: DashboardDomain[];
   sessions: {
@@ -85,6 +86,13 @@ function daysUntil(iso: string): number {
 function pct(num: number, denom: number): string {
   if (denom === 0) return "—";
   return `${Math.round((num / denom) * 100)}%`;
+}
+
+function scoreLabel(score: number): { label: string; color: "red" | "amber" | "green" | "indigo" } {
+  if (score >= 90) return { label: "Exam-ready", color: "indigo" };
+  if (score >= 75) return { label: "Solid", color: "green" };
+  if (score >= 50) return { label: "Building", color: "amber" };
+  return { label: "Beginner", color: "red" };
 }
 
 function pctNum(num: number, denom: number): number {
@@ -517,9 +525,10 @@ export function EnrollmentDashboard(props: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const completePct = pctNum(stats.attemptedCards, stats.totalCards);
-  const correctPct =
-    stats.totalReviews > 0 ? pctNum(stats.correctReviews, stats.totalReviews) : null;
   const nextUpcoming = sessions.upcoming[0];
+  const { label: preparednessLabel, color: preparednessColor } = scoreLabel(
+    stats.preparednessScore,
+  );
   const maxIntervalIndex = Math.max(course.defaultIntervals.length, 1);
 
   const tabs: { key: Tab; label: string }[] = [
@@ -569,14 +578,41 @@ export function EnrollmentDashboard(props: Props) {
       </div>
 
       {/* ── Stats row ──────────────────────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard value={String(stats.totalCards)} label="Questions" />
+        <div
+          className={`rounded-lg border p-4 text-center ${
+            stats.preparednessScore > 0
+              ? preparednessColor === "indigo"
+                ? "border-indigo-200 bg-indigo-50"
+                : preparednessColor === "green"
+                  ? "border-green-200 bg-green-50"
+                  : preparednessColor === "amber"
+                    ? "border-amber-200 bg-amber-50"
+                    : "border-red-200 bg-red-50"
+              : "border-gray-200 bg-white"
+          }`}
+        >
+          <p
+            className={`text-2xl font-bold ${
+              stats.preparednessScore > 0
+                ? preparednessColor === "indigo"
+                  ? "text-indigo-700"
+                  : preparednessColor === "green"
+                    ? "text-green-700"
+                    : preparednessColor === "amber"
+                      ? "text-amber-700"
+                      : "text-red-700"
+                : "text-gray-900"
+            }`}
+          >
+            {stats.preparednessScore > 0 ? `${stats.preparednessScore}%` : "—"}
+          </p>
+          <p className="mt-1 text-xs text-gray-500">
+            {stats.preparednessScore > 0 ? preparednessLabel : "Preparedness"}
+          </p>
+        </div>
         <StatCard value={`${completePct}%`} label="Attempted" highlight={completePct > 0} />
-        <StatCard
-          value={correctPct !== null ? `${correctPct}%` : "—"}
-          label="Correct rate"
-          highlight={correctPct !== null && correctPct >= 75}
-        />
         <StatCard
           value={
             stats.hasDueCards ? "Due now!" : nextUpcoming ? fmtDateShort(nextUpcoming.date) : "—"
