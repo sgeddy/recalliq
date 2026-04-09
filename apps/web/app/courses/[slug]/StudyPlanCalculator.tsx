@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 
+import { useAuth } from "@clerk/nextjs";
 import { computeRetentionPlan } from "@recalliq/srs-engine";
 import type {
   Chronotype,
@@ -13,12 +14,24 @@ import type {
 } from "@recalliq/srs-engine";
 import type { CertConfig } from "@recalliq/types";
 
+const API_URL = process.env["NEXT_PUBLIC_API_URL"] ?? "http://localhost:3001";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+interface SessionConfig {
+  dailyStudyMinutes: number;
+  weeksUntilExam: number;
+  chronotype: Chronotype;
+  priorKnowledge: PriorKnowledge;
+}
+
 interface Props {
   certConfig: CertConfig;
+  // When provided, a "Save plan" button appears that persists settings to the enrollment.
+  enrollmentId?: string;
+  initialValues?: Partial<SessionConfig>;
 }
 
 // ---------------------------------------------------------------------------
@@ -574,13 +587,20 @@ function weeksUntil(dateStr: string): number {
   return Math.max(0, Math.round(diff / MS_PER_WEEK));
 }
 
-export function StudyPlanCalculator({ certConfig }: Props) {
-  const [weeksUntilExam, setWeeksUntilExam] = useState<number>(8);
-  const [dailyStudyMinutes, setDailyStudyMinutes] = useState<number>(60);
-  const [chronotype, setChronotype] = useState<Chronotype>("neutral");
-  const [priorKnowledge, setPriorKnowledge] = useState<PriorKnowledge>("none");
+export function StudyPlanCalculator({ certConfig, enrollmentId, initialValues }: Props) {
+  const { getToken } = useAuth();
+  const [weeksUntilExam, setWeeksUntilExam] = useState<number>(initialValues?.weeksUntilExam ?? 8);
+  const [dailyStudyMinutes, setDailyStudyMinutes] = useState<number>(
+    initialValues?.dailyStudyMinutes ?? 60,
+  );
+  const [chronotype, setChronotype] = useState<Chronotype>(initialValues?.chronotype ?? "neutral");
+  const [priorKnowledge, setPriorKnowledge] = useState<PriorKnowledge>(
+    initialValues?.priorKnowledge ?? "none",
+  );
   // Exam date is optional — when set it overrides the weeks picker.
   const [examDate, setExamDate] = useState<string>("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [, startSaveTransition] = useTransition();
 
   // When an exam date is set, derive weeks from it; otherwise use the pill selection.
   const effectiveWeeks = examDate ? Math.max(1, weeksUntil(examDate)) : weeksUntilExam;
@@ -598,6 +618,33 @@ export function StudyPlanCalculator({ certConfig }: Props) {
 
   // A string key that changes on every input change — drives the CSS fade-in.
   const planKey = `${effectiveWeeks}-${dailyStudyMinutes}-${chronotype}-${priorKnowledge}`;
+
+  async function handleSavePlan() {
+    if (!enrollmentId) return;
+    setSaveStatus("saving");
+    startSaveTransition(async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`${API_URL}/enrollments/${enrollmentId}/session-config`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token ?? ""}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            dailyStudyMinutes,
+            weeksUntilExam: effectiveWeeks,
+            chronotype,
+            priorKnowledge,
+          }),
+        });
+        setSaveStatus(res.ok ? "saved" : "error");
+        if (res.ok) setTimeout(() => setSaveStatus("idle"), 3000);
+      } catch {
+        setSaveStatus("error");
+      }
+    });
+  }
 
   // Minimum date the user can select (today).
   const todayStr = new Date().toISOString().split("T")[0]!;
@@ -686,6 +733,26 @@ export function StudyPlanCalculator({ certConfig }: Props) {
             )}
           </div>
         </div>
+
+        {/* Save button — only shown when used in enrollment context */}
+        {enrollmentId && (
+          <div className="mt-5 flex items-center gap-3 border-t border-gray-100 pt-4">
+            <button
+              type="button"
+              onClick={() => void handleSavePlan()}
+              disabled={saveStatus === "saving"}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {saveStatus === "saving" ? "Saving…" : "Save plan"}
+            </button>
+            {saveStatus === "saved" && (
+              <span className="text-sm text-green-700">Plan saved — session size updated.</span>
+            )}
+            {saveStatus === "error" && (
+              <span className="text-sm text-red-600">Failed to save. Please try again.</span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Plan output ─────────────────────────────────────────────────────── */}

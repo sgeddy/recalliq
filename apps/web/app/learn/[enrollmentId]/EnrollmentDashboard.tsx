@@ -2,6 +2,9 @@
 
 import { useState, useMemo } from "react";
 
+import { StudyPlanCalculator } from "../../courses/[slug]/StudyPlanCalculator";
+import type { CertConfig } from "@recalliq/types";
+
 // ---------------------------------------------------------------------------
 // Types (exported so page.tsx can use them for the fetch shape)
 // ---------------------------------------------------------------------------
@@ -22,11 +25,19 @@ export interface DashboardCard {
   moduleId: string;
   moduleName: string;
   front: string;
+  back: string;
   cardType: string;
   attempts: number;
   correct: number;
   currentIntervalIndex: number;
   nextDueAt: string | null;
+}
+
+export interface SessionConfig {
+  dailyStudyMinutes: number;
+  weeksUntilExam: number;
+  chronotype: string;
+  priorKnowledge: string;
 }
 
 export interface DashboardData {
@@ -36,6 +47,7 @@ export interface DashboardData {
     createdAt: string;
     examDate: string | null;
     examResult: string | null;
+    sessionConfig: SessionConfig | null;
   };
   course: {
     title: string;
@@ -106,11 +118,14 @@ function pctNum(num: number, denom: number): number {
 
 const CARDS_PER_PAGE = 25;
 
-type Tab = "overview" | "sessions" | "questions";
+type Tab = "overview" | "sessions" | "questions" | "plan";
 type CardSortKey = "domain" | "attempts" | "correct" | "next";
+// null = unsorted, "asc" = low→high, "desc" = high→low
+type CorrectSortDir = "asc" | "desc" | null;
 
 interface Props extends DashboardData {
   domains: DashboardDomain[];
+  certConfig: CertConfig | null;
 }
 
 // ── Stat card ────────────────────────────────────────────────────────────────
@@ -332,6 +347,86 @@ function SessionsTab({
   );
 }
 
+// ── Question detail modal ────────────────────────────────────────────────────
+function QuestionModal({
+  card,
+  maxIntervalIndex,
+  onClose,
+}: {
+  card: DashboardCard;
+  maxIntervalIndex: number;
+  onClose: () => void;
+}) {
+  const [answerVisible, setAnswerVisible] = useState(false);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-xl rounded-xl border border-gray-200 bg-white p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+
+        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-600">
+          {card.moduleName}
+        </p>
+
+        <p className="mb-4 text-base font-semibold leading-snug text-gray-900">{card.front}</p>
+
+        <div className="mb-4 flex items-center gap-4 text-sm text-gray-500">
+          <span>
+            Reviews: <strong className="text-gray-700">{card.attempts}</strong>
+          </span>
+          <span>
+            Correct:{" "}
+            <strong
+              className={
+                card.attempts === 0
+                  ? "text-gray-400"
+                  : pctNum(card.correct, card.attempts) >= 80
+                    ? "text-green-700"
+                    : pctNum(card.correct, card.attempts) >= 60
+                      ? "text-amber-700"
+                      : "text-red-700"
+              }
+            >
+              {card.attempts === 0 ? "—" : pct(card.correct, card.attempts)}
+            </strong>
+          </span>
+          <span className="flex items-center gap-1.5">
+            Level: <LevelDots index={card.currentIntervalIndex} max={maxIntervalIndex} />
+          </span>
+        </div>
+
+        {answerVisible ? (
+          <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-500">
+              Answer
+            </p>
+            <p className="text-sm text-gray-800">{card.back}</p>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAnswerVisible(true)}
+            className="w-full rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+          >
+            Show answer
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Card browser tab ─────────────────────────────────────────────────────────
 function CardBrowser({
   cards,
@@ -342,29 +437,35 @@ function CardBrowser({
 }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<CardSortKey>("domain");
+  const [correctDir, setCorrectDir] = useState<CorrectSortDir>(null);
+  const [missedOnly, setMissedOnly] = useState(false);
   const [page, setPage] = useState(0);
+  const [selectedCard, setSelectedCard] = useState<DashboardCard | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return cards.filter(
-      (c) =>
-        q === "" || c.front.toLowerCase().includes(q) || c.moduleName.toLowerCase().includes(q),
-    );
-  }, [cards, search]);
+    return cards.filter((c) => {
+      if (missedOnly && (c.attempts === 0 || c.correct === c.attempts)) return false;
+      return (
+        q === "" || c.front.toLowerCase().includes(q) || c.moduleName.toLowerCase().includes(q)
+      );
+    });
+  }, [cards, search, missedOnly]);
 
   const sorted = useMemo(() => {
+    const effectiveSort = sort === "correct" && correctDir === null ? "domain" : sort;
     return [...filtered].sort((a, b) => {
-      if (sort === "domain") {
+      if (effectiveSort === "domain") {
         const domainCmp = a.moduleName.localeCompare(b.moduleName);
         return domainCmp !== 0 ? domainCmp : a.front.localeCompare(b.front);
       }
-      if (sort === "attempts") return b.attempts - a.attempts;
-      if (sort === "correct") {
+      if (effectiveSort === "attempts") return b.attempts - a.attempts;
+      if (effectiveSort === "correct") {
         const aPct = a.attempts === 0 ? -1 : a.correct / a.attempts;
         const bPct = b.attempts === 0 ? -1 : b.correct / b.attempts;
-        return bPct - aPct;
+        return correctDir === "asc" ? aPct - bPct : bPct - aPct;
       }
-      if (sort === "next") {
+      if (effectiveSort === "next") {
         if (!a.nextDueAt && !b.nextDueAt) return 0;
         if (!a.nextDueAt) return 1;
         if (!b.nextDueAt) return -1;
@@ -372,7 +473,7 @@ function CardBrowser({
       }
       return 0;
     });
-  }, [filtered, sort]);
+  }, [filtered, sort, correctDir]);
 
   const totalPages = Math.ceil(sorted.length / CARDS_PER_PAGE);
   const pageItems = sorted.slice(page * CARDS_PER_PAGE, (page + 1) * CARDS_PER_PAGE);
@@ -383,14 +484,49 @@ function CardBrowser({
   }
 
   function handleSort(key: CardSortKey) {
-    setSort(key);
+    if (key === "correct") {
+      if (sort !== "correct") {
+        setSort("correct");
+        setCorrectDir("asc");
+      } else if (correctDir === "asc") {
+        setCorrectDir("desc");
+      } else {
+        // desc → off: revert to domain
+        setSort("domain");
+        setCorrectDir(null);
+      }
+    } else {
+      setSort(key);
+      setCorrectDir(null);
+    }
     setPage(0);
+  }
+
+  const correctLabel =
+    sort === "correct" && correctDir === "asc"
+      ? "Correct % ↑"
+      : sort === "correct" && correctDir === "desc"
+        ? "Correct % ↓"
+        : "Correct %";
+
+  const isCorrectActive = sort === "correct" && correctDir !== null;
+
+  function handleRowClick(card: DashboardCard) {
+    setSelectedCard(card);
   }
 
   return (
     <div>
+      {selectedCard && (
+        <QuestionModal
+          card={selectedCard}
+          maxIntervalIndex={maxIntervalIndex}
+          onClose={() => setSelectedCard(null)}
+        />
+      )}
+
       {/* Controls */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <input
           type="search"
           placeholder="Search questions…"
@@ -398,45 +534,68 @@ function CardBrowser({
           onChange={(e) => handleSearch(e.target.value)}
           className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
         />
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <span className="hidden sm:inline">Sort:</span>
-          {(
-            [
-              ["domain", "Domain"],
-              ["attempts", "Most reviewed"],
-              ["correct", "Correct %"],
-              ["next", "Due date"],
-            ] as [CardSortKey, string][]
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => handleSort(key)}
-              className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
-                sort === key ? "bg-indigo-100 text-indigo-700" : "text-gray-500 hover:bg-gray-100"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => {
+            setMissedOnly((v) => !v);
+            setPage(0);
+          }}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+            missedOnly
+              ? "bg-red-100 text-red-700"
+              : "border border-gray-200 text-gray-500 hover:bg-gray-100"
+          }`}
+        >
+          {missedOnly ? "✕ Missed only" : "Missed only"}
+        </button>
+      </div>
+
+      <div className="mb-3 flex items-center gap-1 text-xs text-gray-500">
+        <span>Sort:</span>
+        {(
+          [
+            ["domain", "Domain"],
+            ["attempts", "Most reviewed"],
+            ["next", "Due date"],
+          ] as [CardSortKey, string][]
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => handleSort(key)}
+            className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+              sort === key ? "bg-indigo-100 text-indigo-700" : "text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <button
+          onClick={() => handleSort("correct")}
+          className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+            isCorrectActive ? "bg-indigo-100 text-indigo-700" : "text-gray-500 hover:bg-gray-100"
+          }`}
+          title="Click to sort ascending, again for descending, again to clear"
+        >
+          {correctLabel}
+        </button>
       </div>
 
       <p className="mb-2 text-xs text-gray-400">
         {filtered.length} question{filtered.length === 1 ? "" : "s"}
         {search ? ` matching "${search}"` : ""}
+        {missedOnly ? " (missed only)" : ""}
       </p>
 
-      {/* Table */}
-      <div className="overflow-hidden rounded-lg border border-gray-200">
-        <table className="w-full text-sm">
+      {/* Table — horizontally scrollable so all columns are always visible */}
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <table className="min-w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-              <th className="px-4 py-3">Question</th>
-              <th className="hidden px-4 py-3 md:table-cell">Domain</th>
-              <th className="px-4 py-3 text-right">Reviews</th>
-              <th className="px-4 py-3 text-right">Correct</th>
-              <th className="hidden px-4 py-3 sm:table-cell">Level</th>
-              <th className="hidden px-4 py-3 text-right lg:table-cell">Next due</th>
+              <th className="min-w-[260px] px-4 py-3">Question</th>
+              <th className="min-w-[140px] px-4 py-3">Domain</th>
+              <th className="min-w-[80px] px-4 py-3 text-right">Reviews</th>
+              <th className="min-w-[90px] px-4 py-3 text-right">Correct %</th>
+              <th className="min-w-[110px] px-4 py-3">Level</th>
+              <th className="min-w-[90px] px-4 py-3 text-right">Next due</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
@@ -448,13 +607,17 @@ function CardBrowser({
               </tr>
             ) : (
               pageItems.map((c) => (
-                <tr key={c.cardId} className="hover:bg-gray-50">
+                <tr
+                  key={c.cardId}
+                  onClick={() => handleRowClick(c)}
+                  className="cursor-pointer hover:bg-indigo-50"
+                >
                   <td className="max-w-xs px-4 py-3">
                     <p className="truncate text-gray-800" title={c.front}>
                       {c.front}
                     </p>
                   </td>
-                  <td className="hidden px-4 py-3 text-gray-500 md:table-cell">
+                  <td className="px-4 py-3 text-gray-500">
                     <span className="truncate">{c.moduleName}</span>
                   </td>
                   <td className="px-4 py-3 text-right text-gray-600">{c.attempts}</td>
@@ -475,10 +638,10 @@ function CardBrowser({
                       </span>
                     )}
                   </td>
-                  <td className="hidden px-4 py-3 sm:table-cell">
+                  <td className="px-4 py-3">
                     <LevelDots index={c.currentIntervalIndex} max={maxIntervalIndex} />
                   </td>
-                  <td className="hidden px-4 py-3 text-right text-gray-500 lg:table-cell">
+                  <td className="px-4 py-3 text-right text-gray-500">
                     {c.nextDueAt ? fmtDateShort(c.nextDueAt) : "—"}
                   </td>
                 </tr>
@@ -521,7 +684,7 @@ function CardBrowser({
 // ---------------------------------------------------------------------------
 
 export function EnrollmentDashboard(props: Props) {
-  const { enrollment, course, stats, domains, sessions, cards } = props;
+  const { enrollment, course, stats, domains, sessions, cards, certConfig } = props;
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const completePct = pctNum(stats.attemptedCards, stats.totalCards);
@@ -538,6 +701,7 @@ export function EnrollmentDashboard(props: Props) {
       label: `Sessions${sessions.past.length > 0 ? ` (${sessions.past.length})` : ""}`,
     },
     { key: "questions", label: `Questions (${stats.totalCards})` },
+    { key: "plan", label: "Study Plan" },
   ];
 
   return (
@@ -719,6 +883,37 @@ export function EnrollmentDashboard(props: Props) {
 
       {activeTab === "questions" && (
         <CardBrowser cards={cards} maxIntervalIndex={maxIntervalIndex} />
+      )}
+
+      {activeTab === "plan" && (
+        <div>
+          {certConfig ? (
+            <StudyPlanCalculator
+              certConfig={certConfig}
+              enrollmentId={enrollment.id}
+              {...(enrollment.sessionConfig
+                ? {
+                    initialValues: {
+                      dailyStudyMinutes: enrollment.sessionConfig.dailyStudyMinutes,
+                      weeksUntilExam: enrollment.sessionConfig.weeksUntilExam,
+                      chronotype: enrollment.sessionConfig.chronotype as
+                        | "morning"
+                        | "neutral"
+                        | "evening",
+                      priorKnowledge: enrollment.sessionConfig.priorKnowledge as
+                        | "none"
+                        | "basic"
+                        | "experienced",
+                    },
+                  }
+                : {})}
+            />
+          ) : (
+            <p className="rounded-lg border border-gray-200 bg-white px-5 py-6 text-sm text-gray-500">
+              Study plan is not available for this course.
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

@@ -14,14 +14,18 @@ export interface SessionCard {
   back: string;
   options: string[] | null;
   correctOptionIndex: number | null;
+  correctOptionIndices: number[] | null;
 }
 
 interface SessionData {
   enrollmentId: string;
   courseTitle: string;
-  totalCards: number;
-  completedCards: number;
-  cards: SessionCard[];
+  sessionMinutes: number;
+  sessionCap: number;
+  dueReviews: SessionCard[];
+  newCards: SessionCard[];
+  completedDueReviews: number;
+  completedNewCards: number;
 }
 
 async function fetchSession(enrollmentId: string, authToken: string): Promise<SessionData | null> {
@@ -78,7 +82,13 @@ export default async function SessionPage({ params }: PageProps) {
     // Non-blocking
   }
 
-  if (session.cards.length === 0) {
+  const hasAnything =
+    session.dueReviews.length > 0 ||
+    session.newCards.length > 0 ||
+    session.completedDueReviews > 0 ||
+    session.completedNewCards > 0;
+
+  if (!hasAnything) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
         <div className="w-full max-w-lg rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
@@ -102,9 +112,12 @@ export default async function SessionPage({ params }: PageProps) {
     <SessionQuiz
       enrollmentId={session.enrollmentId}
       courseTitle={session.courseTitle}
-      totalCards={session.totalCards}
-      completedCards={session.completedCards}
-      cards={session.cards}
+      sessionMinutes={session.sessionMinutes}
+      sessionCap={session.sessionCap}
+      dueReviews={session.dueReviews}
+      newCards={session.newCards}
+      completedDueReviews={session.completedDueReviews}
+      completedNewCards={session.completedNewCards}
     />
   );
 }

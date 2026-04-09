@@ -251,6 +251,57 @@ exam_outcomes table:
 
 ---
 
+## FEAT-006: Private vs. Public Courses
+
+**What:** Course creators choose whether a course is private or public at creation time.
+
+**Private courses:**
+
+- Owner can upload copyright-protected material (e.g. Messer practice exam PDFs) that they personally purchased
+- Content is never shared with or visible to other users
+- Generates a personalized SRS study plan from the uploaded material
+- No price can be set — strictly for personal use
+
+**Public courses:**
+
+- Owner can set a price; other users can enroll and pay
+- Before publishing, content is checked against a copyright flag (automated heuristics + manual review queue)
+- Owner must attest they have legal right to distribute the material (checkbox + timestamp recorded)
+- Copyright attestation stored on the course record for audit trail
+
+**DB changes needed:**
+
+- `courses`: add `visibility ENUM('private', 'public') DEFAULT 'private'`
+- `courses`: add `copyright_attested_at TIMESTAMP` (nullable — null = not attested / private)
+- `courses`: `owner_user_id TEXT` (nullable — null = platform-owned, already planned in FEAT-005)
+- `courses`: `price_cents INTEGER` (nullable — null = free or private)
+
+---
+
+## FEAT-007: Initial Competency Assessment Quiz
+
+**What:** When a user enrolls in a course, they can optionally take a short pre-assessment quiz to gauge existing knowledge. The score then adjusts their starting study plan.
+
+**Behavior:**
+
+- After enrollment, user is presented with "Take a quick assessment? (recommended)" — skippable
+- Assessment draws a representative sample of cards across all domains (e.g. 20 questions)
+- Score buckets map to study plan starting points:
+  - 0–30%: No prior knowledge — use full default interval schedule, no cards skipped
+  - 31–60%: Some familiarity — start intermediate cards at interval index 1 instead of 0
+  - 61–85%: Strong foundation — fast-track familiar domains, focus on weak ones
+  - 86–100%: Near-ready — compress schedule, prioritize missed areas only
+- Without assessment: default "no knowledge" starting config is applied
+- Study plan config can be manually adjusted at any time from enrollment settings
+
+**DB changes needed:**
+
+- `enrollments`: add `assessment_score INTEGER` (nullable — null = skipped)
+- `enrollments`: add `assessment_completed_at TIMESTAMP` (nullable)
+- Assessment answers do NOT generate review events — they only set the starting config
+
+---
+
 ## Completed (not in backlog)
 
 - Mock exam sessions — full state machine, domain-weighted questions, scaled scoring, domain breakdown, review mode ✓

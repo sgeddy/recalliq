@@ -497,8 +497,11 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
   );
 
   // GET /enrollments/:id/session
-  // Returns all due (scheduledAt <= now, not yet completed) review events with cards
-  // for the given enrollment. Used by the in-app session quiz page.
+  // Returns due reviews and a capped batch of new cards for the session quiz.
+  // Due reviews (intervalIndex > 0, scheduledAt <= now) are always included.
+  // New cards (intervalIndex = 0) are capped to floor(sessionMinutes * 60 / 90).
+  // The cap is based on the enrollment's sessionConfig (default: 60 min → 40 cards).
+  // Seeded shuffle stabilises card order across resumes within a batch.
   fastify.get("/enrollments/:id/session", { preHandler: [requireAuth] }, async (request, reply) => {
     const { id } = parseParams(request, enrollmentIdSchema);
     const clerkId = request.userId as string;
@@ -531,10 +534,16 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
       .where(eq(courses.id, enrollment.courseId))
       .limit(1);
 
-    // Fetch all events for this session (both completed and pending) so we can
-    // establish a stable card order for resume. Completed cards anchor the position
-    // of remaining ones — without them, the shuffle of a smaller set would differ.
-    const allSessionEvents = await db
+    const sessionMinutes = enrollment.sessionConfig?.dailyStudyMinutes ?? 60;
+    // Maximum new cards the picker could ever request (90 min ceiling).
+    const MAX_NEW_CARDS = Math.floor((90 * 60) / 90);
+    const sessionCap = Math.floor((sessionMinutes * 60) / 90);
+
+    const now = new Date();
+
+    // ── Due reviews (intervalIndex > 0, scheduledAt <= now) ──────────────────
+    // Include both completed and pending to anchor stable shuffle order on resume.
+    const allDueReviewEvents = await db
       .select({
         reviewEventId: reviewEvents.id,
         completedAt: reviewEvents.completedAt,
@@ -545,27 +554,66 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
         back: cards.back,
         options: cards.options,
         correctOptionIndex: cards.correctOptionIndex,
+        correctOptionIndices: cards.correctOptionIndices,
       })
       .from(reviewEvents)
       .innerJoin(cards, eq(cards.id, reviewEvents.cardId))
-      .where(and(eq(reviewEvents.enrollmentId, id), lte(reviewEvents.scheduledAt, new Date())));
+      .where(
+        and(
+          eq(reviewEvents.enrollmentId, id),
+          lte(reviewEvents.scheduledAt, now),
+          sql`${reviewEvents.intervalIndex} > 0`,
+        ),
+      );
 
-    // Deterministic shuffle so order is consistent across resumes within a session.
-    const shuffled = seededShuffle(allSessionEvents, seedFromUUID(id));
-    const totalCards = shuffled.length;
-    const dueEvents = shuffled.filter((c) => c.completedAt === null);
-    const completedCards = totalCards - dueEvents.length;
+    const shuffledDueReviews = seededShuffle(allDueReviewEvents, seedFromUUID(id));
+    const completedDueReviews = shuffledDueReviews.filter((e) => e.completedAt !== null).length;
+    const pendingDueReviews = shuffledDueReviews
+      .filter((e) => e.completedAt === null)
+      .map(({ completedAt: _c, ...card }) => card);
 
-    // Strip the internal completedAt field before sending to client.
-    const sessionCards = dueEvents.map(({ completedAt: _ignored, ...card }) => card);
+    // ── New cards (intervalIndex = 0) ─────────────────────────────────────────
+    // Include all (completed + pending) so the seeded shuffle is stable as cards
+    // are completed. The batch is the first sessionCap of the shuffled list.
+    const allNewCardEvents = await db
+      .select({
+        reviewEventId: reviewEvents.id,
+        completedAt: reviewEvents.completedAt,
+        intervalIndex: reviewEvents.intervalIndex,
+        cardId: cards.id,
+        type: cards.type,
+        front: cards.front,
+        back: cards.back,
+        options: cards.options,
+        correctOptionIndex: cards.correctOptionIndex,
+        correctOptionIndices: cards.correctOptionIndices,
+      })
+      .from(reviewEvents)
+      .innerJoin(cards, eq(cards.id, reviewEvents.cardId))
+      .where(and(eq(reviewEvents.enrollmentId, id), sql`${reviewEvents.intervalIndex} = 0`));
+
+    // Use a different seed offset for new cards to avoid collisions with due-review shuffle.
+    const newCardShuffle = seededShuffle(allNewCardEvents, seedFromUUID(id) ^ 0xdeadbeef);
+
+    // The extended batch covers the maximum the session picker can ever show.
+    // completedNewCards must be counted from this same set so that answers to
+    // any card the client could have shown are reflected in the resume position.
+    const extendedBatch = newCardShuffle.slice(0, MAX_NEW_CARDS);
+    const completedNewCards = extendedBatch.filter((e) => e.completedAt !== null).length;
+    const pendingNewCards = extendedBatch
+      .filter((e) => e.completedAt === null)
+      .map(({ completedAt: _c, ...card }) => card);
 
     await reply.status(200).send({
       data: {
         enrollmentId: id,
         courseTitle: course?.title ?? "Your RecallIQ Course",
-        totalCards,
-        completedCards,
-        cards: sessionCards,
+        sessionMinutes,
+        sessionCap,
+        dueReviews: pendingDueReviews,
+        newCards: pendingNewCards,
+        completedDueReviews,
+        completedNewCards,
       },
     });
   });
@@ -689,6 +737,53 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       await reply.status(200).send({ data: { ok: true, examDate } });
+    },
+  );
+
+  // PATCH /enrollments/:id/session-config
+  // Persists the user's study plan settings (from the StudyPlanCalculator).
+  // These settings drive the session size cap in GET /enrollments/:id/session.
+  fastify.patch(
+    "/enrollments/:id/session-config",
+    { preHandler: [requireAuth] },
+    async (request, reply) => {
+      const { id } = parseParams(request, enrollmentIdSchema);
+      const clerkId = request.userId as string;
+
+      const sessionConfigSchema = z.object({
+        dailyStudyMinutes: z.number().int().min(1).max(480),
+        weeksUntilExam: z.number().int().min(1).max(52),
+        chronotype: z.enum(["morning", "neutral", "evening"]),
+        priorKnowledge: z.enum(["none", "basic", "experienced"]),
+      });
+      const config = parseBody(request, sessionConfigSchema);
+
+      const [userRow] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.clerkId, clerkId))
+        .limit(1);
+
+      if (!userRow) {
+        throw Object.assign(new Error("User not found"), { statusCode: 404 });
+      }
+
+      const [enrollment] = await db
+        .select({ id: enrollments.id })
+        .from(enrollments)
+        .where(and(eq(enrollments.id, id), eq(enrollments.userId, userRow.id)))
+        .limit(1);
+
+      if (!enrollment) {
+        throw Object.assign(new Error("Enrollment not found"), { statusCode: 404 });
+      }
+
+      await db
+        .update(enrollments)
+        .set({ sessionConfig: config, updatedAt: new Date() })
+        .where(eq(enrollments.id, id));
+
+      await reply.status(200).send({ data: { ok: true } });
     },
   );
 
@@ -852,6 +947,7 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
           completedAt: reviewEvents.completedAt,
           passed: reviewEvents.passed,
           cardFront: cards.front,
+          cardBack: cards.back,
           cardType: cards.type,
           moduleId: modules.id,
           moduleName: modules.title,
@@ -954,6 +1050,7 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
           moduleName: string;
           modulePosition: number;
           front: string;
+          back: string;
           cardType: string;
           attempts: number;
           correct: number;
@@ -972,6 +1069,7 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
             moduleName: event.moduleName,
             modulePosition: event.modulePosition,
             front: event.cardFront,
+            back: event.cardBack,
             cardType: event.cardType,
             attempts: 0,
             correct: 0,
@@ -1058,6 +1156,7 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
             createdAt: enrollment.createdAt,
             examDate: enrollment.examDate,
             examResult: enrollment.examResult,
+            sessionConfig: enrollment.sessionConfig ?? null,
           },
           course: {
             title: course?.title ?? "",

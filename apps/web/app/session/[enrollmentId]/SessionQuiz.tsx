@@ -8,15 +8,20 @@ import type { SessionCard } from "./page";
 const API_URL = process.env["NEXT_PUBLIC_API_URL"] ?? "http://localhost:3001";
 const LETTER_LABELS = ["A", "B", "C", "D", "E", "F"] as const;
 
-// Assume ~90 seconds per MCQ question for estimated completion time.
+// Approximate seconds per card for time estimates.
 const SECONDS_PER_CARD = 90;
+
+const SESSION_DURATION_OPTIONS = [15, 30, 45, 60, 90] as const;
 
 interface Props {
   enrollmentId: string;
   courseTitle: string;
-  totalCards: number;
-  completedCards: number;
-  cards: SessionCard[];
+  sessionMinutes: number;
+  sessionCap: number;
+  dueReviews: SessionCard[];
+  newCards: SessionCard[];
+  completedDueReviews: number;
+  completedNewCards: number;
 }
 
 type CardState =
@@ -48,21 +53,35 @@ async function submitReview(
 export function SessionQuiz({
   enrollmentId,
   courseTitle,
-  totalCards,
-  completedCards,
-  cards,
+  sessionMinutes,
+  sessionCap,
+  dueReviews,
+  newCards,
+  completedDueReviews,
+  completedNewCards,
 }: Props) {
   const { getToken } = useAuth();
   const [hasStarted, setHasStarted] = useState(false);
+  const [pickedMinutes, setPickedMinutes] = useState(sessionMinutes);
   const [cardIndex, setCardIndex] = useState(0);
   const [cardState, setCardState] = useState<CardState>({ phase: "question" });
   const [results, setResults] = useState<{ passed: boolean }[]>([]);
   const [isPending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Tracks selected indices for multi-select (Select TWO) questions
+  const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+
+  // Derive the active card set from the picker.
+  // Due reviews always come first; new cards are capped by session duration.
+  const newCardSlots = Math.floor((pickedMinutes * 60) / SECONDS_PER_CARD);
+  const activeNewCards = newCards.slice(0, newCardSlots);
+  const cards = [...dueReviews, ...activeNewCards];
+
+  const isResuming = completedDueReviews > 0 || completedNewCards > 0;
+  const completedCards = completedDueReviews + completedNewCards;
+  const totalCards = cards.length + completedCards;
 
   const remainingCards = cards.length;
-  const isResuming = completedCards > 0;
-
   const currentCard = cards[cardIndex];
   const isLastCard = cardIndex === cards.length - 1;
   const isDone = cardIndex >= cards.length;
@@ -73,7 +92,7 @@ export function SessionQuiz({
     return token;
   }
 
-  // ── Pre-quiz intro screen ────────────────────────────────────────────────
+  // ── Pre-quiz intro screen ──────────────────────────────────────────────────
   if (!hasStarted) {
     const estimatedMinutes = Math.ceil((remainingCards * SECONDS_PER_CARD) / 60);
 
@@ -86,7 +105,7 @@ export function SessionQuiz({
           <h1 className="mb-2 text-2xl font-bold text-gray-900">{courseTitle}</h1>
 
           {isResuming ? (
-            <p className="mb-6 text-gray-500">
+            <p className="mb-4 text-gray-500">
               You&rsquo;ve completed{" "}
               <strong className="text-gray-700">
                 {completedCards} of {totalCards}
@@ -94,23 +113,76 @@ export function SessionQuiz({
               questions. Pick up where you left off.
             </p>
           ) : (
-            <p className="mb-6 text-gray-500">
-              Your first session is ready. Work through all{" "}
-              <strong className="text-gray-700">{totalCards} questions</strong> to build your
-              foundation.
+            <p className="mb-4 text-gray-500">
+              Your session is ready. Review{" "}
+              <strong className="text-gray-700">
+                {dueReviews.length} due card{dueReviews.length !== 1 ? "s" : ""}
+              </strong>
+              {activeNewCards.length > 0 && (
+                <>
+                  {" "}
+                  and learn{" "}
+                  <strong className="text-gray-700">
+                    {activeNewCards.length} new card{activeNewCards.length !== 1 ? "s" : ""}
+                  </strong>
+                </>
+              )}
+              .
             </p>
           )}
 
-          <div className="mb-8 grid grid-cols-2 gap-4">
-            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center">
-              <p className="text-2xl font-bold text-indigo-600">{remainingCards}</p>
-              <p className="mt-0.5 text-xs text-gray-500">
-                {isResuming ? "questions remaining" : "questions"}
+          {/* Session length picker — only shown when not mid-batch */}
+          {!isResuming && (
+            <div className="mb-6">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                How long do you want to study?
               </p>
+              <div className="flex flex-wrap gap-2">
+                {SESSION_DURATION_OPTIONS.map((min) => {
+                  const slots = Math.floor((min * 60) / SECONDS_PER_CARD);
+                  const available = Math.min(slots, newCards.length);
+                  return (
+                    <button
+                      key={min}
+                      type="button"
+                      onClick={() => setPickedMinutes(min)}
+                      className={[
+                        "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                        pickedMinutes === min
+                          ? "border-indigo-600 bg-indigo-600 text-white"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:bg-indigo-50",
+                      ].join(" ")}
+                    >
+                      {min} min
+                      {available > 0 && (
+                        <span className="ml-1.5 text-xs opacity-70">
+                          ({dueReviews.length + available} cards)
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {sessionCap !== newCardSlots && (
+                <p className="mt-2 text-xs text-indigo-600">
+                  Your study plan default is {sessionMinutes} min. You can adjust per session.
+                </p>
+              )}
             </div>
-            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center">
-              <p className="text-2xl font-bold text-indigo-600">~{estimatedMinutes} min</p>
-              <p className="mt-0.5 text-xs text-gray-500">estimated time</p>
+          )}
+
+          <div className="mb-6 grid grid-cols-3 gap-3">
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
+              <p className="text-2xl font-bold text-indigo-600">{dueReviews.length}</p>
+              <p className="mt-0.5 text-xs text-gray-500">due reviews</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
+              <p className="text-2xl font-bold text-indigo-600">{activeNewCards.length}</p>
+              <p className="mt-0.5 text-xs text-gray-500">new cards</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
+              <p className="text-2xl font-bold text-indigo-600">~{estimatedMinutes}</p>
+              <p className="mt-0.5 text-xs text-gray-500">min estimated</p>
             </div>
           </div>
 
@@ -137,7 +209,7 @@ export function SessionQuiz({
     );
   }
 
-  // ── Session complete ─────────────────────────────────────────────────────
+  // ── Session complete ───────────────────────────────────────────────────────
   if (isDone) {
     const passedCount = results.filter((r) => r.passed).length;
     return (
@@ -191,6 +263,43 @@ export function SessionQuiz({
     });
   }
 
+  function toggleMultiSelectIndex(index: number) {
+    if (cardState.phase !== "question" || isPending) return;
+    setSelectedIndices((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
+
+  function handleMultiSelectSubmit() {
+    if (cardState.phase !== "question" || isPending) return;
+    const correctSet = new Set(card.correctOptionIndices!);
+    const passed =
+      selectedIndices.size === correctSet.size &&
+      [...selectedIndices].every((i) => correctSet.has(i));
+
+    startTransition(async () => {
+      setSubmitError(null);
+      try {
+        const token = await getAuthToken();
+        const result = await submitReview(card.reviewEventId, passed, token);
+        setCardState({
+          phase: "result",
+          passed: result.passed,
+          nextScheduledAt: result.nextScheduledAt,
+        });
+        setResults((prev) => [...prev, { passed: result.passed }]);
+      } catch {
+        setSubmitError("Failed to save your answer. Please try again.");
+      }
+    });
+  }
+
   function handleSelfAssess(knew: boolean) {
     if (cardState.phase !== "revealed" || isPending) return;
 
@@ -217,6 +326,7 @@ export function SessionQuiz({
     } else {
       setCardIndex((i) => i + 1);
       setCardState({ phase: "question" });
+      setSelectedIndices(new Set());
       setSubmitError(null);
     }
   }
@@ -256,7 +366,11 @@ export function SessionQuiz({
 
         <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
           <p className="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-600">
-            {card.type === "mcq" ? "Multiple choice" : "Flashcard"}
+            {card.type === "mcq"
+              ? card.correctOptionIndices && card.correctOptionIndices.length > 1
+                ? `Select ${card.correctOptionIndices.length}`
+                : "Multiple choice"
+              : "Flashcard"}
           </p>
           <h1 className="mb-6 text-lg font-semibold leading-snug text-gray-900">{card.front}</h1>
 
@@ -268,28 +382,80 @@ export function SessionQuiz({
 
           {/* ── MCQ question ─────────────────────────────────────────── */}
           {card.type === "mcq" && cardState.phase === "question" && card.options && (
-            <div className="space-y-3" role="list" aria-label="Answer options">
-              {card.options.map((option, index) => {
-                const label = LETTER_LABELS[index] ?? String(index + 1);
-                return (
+            <>
+              {card.correctOptionIndices && card.correctOptionIndices.length > 1 ? (
+                // Multi-select mode
+                <div>
+                  <p className="mb-3 text-sm text-indigo-600">
+                    Choose {card.correctOptionIndices.length} answers, then click Submit.
+                  </p>
+                  <div className="space-y-3" role="group" aria-label="Answer options">
+                    {card.options.map((option, index) => {
+                      const label = LETTER_LABELS[index] ?? String(index + 1);
+                      const isChecked = selectedIndices.has(index);
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => toggleMultiSelectIndex(index)}
+                          disabled={isPending}
+                          aria-pressed={isChecked}
+                          className={[
+                            "flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-gray-800 transition-colors disabled:opacity-50",
+                            isChecked
+                              ? "border-indigo-500 bg-indigo-50"
+                              : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50",
+                          ].join(" ")}
+                        >
+                          <span
+                            className={[
+                              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors",
+                              isChecked ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600",
+                            ].join(" ")}
+                            aria-hidden="true"
+                          >
+                            {isChecked ? "✓" : label}
+                          </span>
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
                   <button
-                    key={index}
-                    onClick={() => handleMcqAnswer(index)}
-                    disabled={isPending}
-                    role="listitem"
-                    className="flex w-full items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left text-gray-800 transition-colors hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50"
+                    onClick={handleMultiSelectSubmit}
+                    disabled={
+                      selectedIndices.size !== card.correctOptionIndices.length || isPending
+                    }
+                    className="mt-4 w-full rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <span
-                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
-                      aria-hidden="true"
-                    >
-                      {label}
-                    </span>
-                    {option}
+                    Submit ({selectedIndices.size}/{card.correctOptionIndices.length} selected)
                   </button>
-                );
-              })}
-            </div>
+                </div>
+              ) : (
+                // Single-select mode
+                <div className="space-y-3" role="list" aria-label="Answer options">
+                  {card.options.map((option, index) => {
+                    const label = LETTER_LABELS[index] ?? String(index + 1);
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => handleMcqAnswer(index)}
+                        disabled={isPending}
+                        role="listitem"
+                        className="flex w-full items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left text-gray-800 transition-colors hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50"
+                      >
+                        <span
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white"
+                          aria-hidden="true"
+                        >
+                          {label}
+                        </span>
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
 
           {/* ── MCQ result ───────────────────────────────────────────── */}
@@ -372,8 +538,13 @@ interface McqResultProps {
 }
 
 function McqResult({ card, passed, nextScheduledAt, onNext, isLastCard }: McqResultProps) {
-  const correctOption =
-    card.correctOptionIndex !== null ? (card.options?.[card.correctOptionIndex] ?? null) : null;
+  const isMultiSelect = !!(card.correctOptionIndices && card.correctOptionIndices.length > 1);
+  const correctOptions = isMultiSelect
+    ? (card.correctOptionIndices ?? []).map((i) => card.options?.[i]).filter(Boolean)
+    : card.correctOptionIndex !== null
+      ? [card.options?.[card.correctOptionIndex] ?? null].filter(Boolean)
+      : [];
+
   const nextDate = nextScheduledAt
     ? new Date(nextScheduledAt).toLocaleDateString(undefined, {
         weekday: "long",
@@ -394,12 +565,22 @@ function McqResult({ card, passed, nextScheduledAt, onNext, isLastCard }: McqRes
         {passed ? "Correct!" : "Not quite"}
       </p>
 
-      {!passed && correctOption && (
+      {!passed && correctOptions.length > 0 && (
         <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
           <p className="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-500">
-            Correct answer
+            {isMultiSelect ? "Correct answers" : "Correct answer"}
           </p>
-          <p className="font-medium text-gray-800">{correctOption}</p>
+          {isMultiSelect ? (
+            <ul className="space-y-1">
+              {correctOptions.map((opt, i) => (
+                <li key={i} className="font-medium text-gray-800">
+                  {opt}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="font-medium text-gray-800">{correctOptions[0]}</p>
+          )}
         </div>
       )}
 

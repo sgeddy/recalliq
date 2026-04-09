@@ -54,11 +54,11 @@ export default async function LearnPage({ params }: PageProps) {
 
   // Merge cert domain weights into the domain rows so the client doesn't
   // need to re-import certConfigs (avoids a large bundle inclusion).
-  const certConfig = certConfigs[data.course.slug];
+  const certConfig = certConfigs[data.course.slug] ?? null;
   const domainsWithWeights = data.domains.map((d) => ({
     ...d,
     weightPercent: certConfig?.domains[d.modulePosition - 1]?.weightPercent ?? null,
   }));
 
-  return <EnrollmentDashboard {...data} domains={domainsWithWeights} />;
+  return <EnrollmentDashboard {...data} domains={domainsWithWeights} certConfig={certConfig} />;
 }

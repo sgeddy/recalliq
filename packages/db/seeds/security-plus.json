@@ -5,16 +5,7 @@
     "description": "Master the CompTIA Security+ exam with spaced repetition across all 5 SY0-701 domains. Maximum 90 questions · 90 minutes · Passing score 750/900.",
     "category": "cybersecurity",
     "difficulty": "intermediate",
-    "defaultIntervals": [
-      0,
-      1,
-      4,
-      10,
-      25,
-      60,
-      150,
-      365
-    ],
+    "defaultIntervals": [0, 1, 4, 10, 25, 60, 150, 365],
     "passMark": 75,
     "status": "published"
   },
@@ -28,49 +19,25 @@
           "type": "mcq",
           "front": "A ransomware attack encrypts all files on a company's servers, preventing employees from accessing them. Which component of the CIA triad has been violated?",
           "back": "Availability. Ransomware denies authorized users access to their own data, which is an attack on availability — one of the three pillars of the CIA triad.",
-          "options": [
-            "Confidentiality",
-            "Integrity",
-            "Availability",
-            "Authentication"
-          ],
+          "options": ["Confidentiality", "Integrity", "Availability", "Authentication"],
           "correctOptionIndex": 2,
-          "tags": [
-            "cia-triad",
-            "domain-1"
-          ]
+          "tags": ["cia-triad", "domain-1"]
         },
         {
           "type": "mcq",
           "front": "A company installs motion-sensing cameras in its server room to detect unauthorized entry. Which type of security control is this?",
           "back": "Detective control. Detective controls identify and record security events after or during their occurrence. Cameras detect and document intrusions rather than preventing them.",
-          "options": [
-            "Preventive",
-            "Detective",
-            "Corrective",
-            "Deterrent"
-          ],
+          "options": ["Preventive", "Detective", "Corrective", "Deterrent"],
           "correctOptionIndex": 1,
-          "tags": [
-            "security-controls",
-            "domain-1"
-          ]
+          "tags": ["security-controls", "domain-1"]
         },
         {
           "type": "mcq",
           "front": "Which type of encryption uses the same key for both encrypting and decrypting data?",
           "back": "Symmetric encryption. Symmetric algorithms (AES, DES, 3DES) use one shared secret key. Asymmetric algorithms use a public/private key pair.",
-          "options": [
-            "Asymmetric encryption",
-            "Symmetric encryption",
-            "Hashing",
-            "Elliptic curve"
-          ],
+          "options": ["Asymmetric encryption", "Symmetric encryption", "Hashing", "Elliptic curve"],
           "correctOptionIndex": 1,
-          "tags": [
-            "cryptography",
-            "domain-1"
-          ]
+          "tags": ["cryptography", "domain-1"]
         },
         {
           "type": "mcq",
@@ -83,27 +50,15 @@
             "Two instances of something you know"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "mfa",
-            "authentication",
-            "domain-1"
-          ]
+          "tags": ["mfa", "authentication", "domain-1"]
         },
         {
           "type": "mcq",
           "front": "Which security model operates on the principle of 'never trust, always verify' and requires continuous authentication regardless of network location?",
           "back": "Zero Trust. Zero Trust eliminates implicit trust based on network location. Every access request must be explicitly verified using identity, device health, and context.",
-          "options": [
-            "Defense in depth",
-            "Least privilege",
-            "Zero Trust",
-            "Network segmentation"
-          ],
+          "options": ["Defense in depth", "Least privilege", "Zero Trust", "Network segmentation"],
           "correctOptionIndex": 2,
-          "tags": [
-            "zero-trust",
-            "domain-1"
-          ]
+          "tags": ["zero-trust", "domain-1"]
         },
         {
           "type": "mcq",
@@ -116,11 +71,7 @@
             "To manage firewall access rules"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "pki",
-            "cryptography",
-            "domain-1"
-          ]
+          "tags": ["pki", "cryptography", "domain-1"]
         },
         {
           "type": "mcq",
@@ -133,60 +84,31 @@
             "Digital signing"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "hashing",
-            "cryptography",
-            "domain-1"
-          ]
+          "tags": ["hashing", "cryptography", "domain-1"]
         },
         {
           "type": "mcq",
           "front": "Which authentication protocol uses tickets issued by a Key Distribution Center (KDC) to provide single sign-on in a Windows domain environment?",
           "back": "Kerberos. Kerberos issues time-stamped tickets via the KDC. Clients present tickets to services instead of re-entering credentials, enabling SSO across trusted domain resources.",
-          "options": [
-            "LDAP",
-            "RADIUS",
-            "Kerberos",
-            "TACACS+"
-          ],
+          "options": ["LDAP", "RADIUS", "Kerberos", "TACACS+"],
           "correctOptionIndex": 2,
-          "tags": [
-            "authentication",
-            "kerberos",
-            "domain-1"
-          ]
+          "tags": ["authentication", "kerberos", "domain-1"]
         },
         {
           "type": "mcq",
           "front": "Which of the following would explain why a company would automatically add a digital signature to each outgoing email message?",
           "back": "Integrity. Integrity refers to the trustworthiness of data. A digital signature allows the recipient to confirm that none of the data has been changed since the digital signature was created.",
-          "options": [
-            "Availability",
-            "Confidentiality",
-            "Integrity",
-            "Authentication"
-          ],
+          "options": ["Availability", "Confidentiality", "Integrity", "Authentication"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "the-cia-triad"
-          ]
+          "tags": ["domain-1", "the-cia-triad"]
         },
         {
           "type": "mcq",
           "front": "What kind of security control is associated with a login banner?",
           "back": "Deterrent. A deterrent control does not directly stop an attack, but it may discourage an action.",
-          "options": [
-            "Corrective",
-            "Detective",
-            "Preventive",
-            "Deterrent"
-          ],
+          "options": ["Corrective", "Detective", "Preventive", "Deterrent"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "security-controls"
-          ]
+          "tags": ["domain-1", "security-controls"]
         },
         {
           "type": "mcq",
@@ -199,26 +121,15 @@
             "Access control vestibule"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "physical-security"
-          ]
+          "tags": ["domain-1", "physical-security"]
         },
         {
           "type": "mcq",
           "front": "A organization stores some employee information in encrypted form, but other public details are stored as plaintext. Which of the following would BEST describe this encryption strategy?",
           "back": "Record. Record-level encryption is commonly used with databases to encrypt individual columns within the database. This would store some information in the database as plaintext and other information as encrypted data.",
-          "options": [
-            "Asymmetric",
-            "Key escrow",
-            "Full-disk",
-            "Record"
-          ],
+          "options": ["Asymmetric", "Key escrow", "Full-disk", "Record"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "encrypting-data"
-          ]
+          "tags": ["domain-1", "encrypting-data"]
         },
         {
           "type": "mcq",
@@ -231,42 +142,23 @@
             "Contact the stakeholders regarding the outage"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "change-management-process"
-          ]
+          "tags": ["domain-1", "change-management-process"]
         },
         {
           "type": "mcq",
           "front": "An organization is installing a UPS for their new data center. Which of the following would BEST describe this control type?",
           "back": "Compensating. A compensating security control doesn’t prevent an attack, but it does restore from an attack using other means. In this example, the UPS (Uninterruptible Power Supply) does not stop a power outage, but it does provide alternative power if an outage occurs.",
-          "options": [
-            "Deterrent",
-            "Detective",
-            "Compensating",
-            "Directive"
-          ],
+          "options": ["Deterrent", "Detective", "Compensating", "Directive"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "security-controls"
-          ]
+          "tags": ["domain-1", "security-controls"]
         },
         {
           "type": "mcq",
           "front": "A manufacturing company would like to track the progress of parts used on an assembly line. Which of the following technologies would be the BEST choice for this task?",
           "back": "Blockchain. The ledger functionality of a blockchain can be used to track or verify components, digital media, votes, and other physical or digital objects.",
-          "options": [
-            "Asymmetric encryption",
-            "Secure enclave",
-            "Blockchain",
-            "Hashing"
-          ],
+          "options": ["Asymmetric encryption", "Secure enclave", "Blockchain", "Hashing"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "blockchain-technology"
-          ]
+          "tags": ["domain-1", "blockchain-technology"]
         },
         {
           "type": "mcq",
@@ -279,74 +171,39 @@
             "Zero trust"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "zero-trust"
-          ]
+          "tags": ["domain-1", "zero-trust"]
         },
         {
           "type": "mcq",
           "front": "A company encourages users to encrypt all of their confidential materials on a central server. The organization would like to enable key escrow as a backup option. Which of these keys should the organization place into escrow?",
           "back": "Private. With asymmetric encryption, the private key is used to decrypt information that has been encrypted with the public key. To ensure continued access to the encrypted data, the company must have a copy of each private key.",
-          "options": [
-            "Session",
-            "Public",
-            "Private",
-            "CA"
-          ],
+          "options": ["Session", "Public", "Private", "CA"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "public-key-infrastructure"
-          ]
+          "tags": ["domain-1", "public-key-infrastructure"]
         },
         {
           "type": "mcq",
           "front": "A recent report shows the return of a vulnerability that was previously patched four months ago. After researching this issue, the security team has found a recent patch has reintroduced this vulnerability on the servers. Which of the following should the security administrator deploy to stops this issue from occurring in the future?",
           "back": "Change management. The change management process includes a testing phase that can help identify potential issues relating to an application change or upgrade.",
-          "options": [
-            "Change management",
-            "Containerization",
-            "Data masking",
-            "802.1X"
-          ],
+          "options": ["Change management", "Containerization", "Data masking", "802.1X"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "change-management-process"
-          ]
+          "tags": ["domain-1", "change-management-process"]
         },
         {
           "type": "mcq",
           "front": "A security manager would like to ensure that unique hashes are used with an application login process. Which of the following would be the BEST way to add random data when generating a set of stored credential hashes?",
           "back": "Salting. Adding random data, or salt, to a password when performing the hashing process will create a unique hash, even if other users have chosen the same password.",
-          "options": [
-            "Salting",
-            "Obfuscation",
-            "Key stretching",
-            "Digital signature"
-          ],
+          "options": ["Salting", "Obfuscation", "Key stretching", "Digital signature"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "hashing-and-digital-signatures"
-          ]
+          "tags": ["domain-1", "hashing-and-digital-signatures"]
         },
         {
           "type": "mcq",
           "front": "Which cryptographic method is used to add trust to a digital certificate?",
           "back": "Digital signature. A certificate authority will digitally sign a certificate to add trust. If you trust the certificate authority, you can therefore trust the certificate.",
-          "options": [
-            "Hash",
-            "Symmetric encryption",
-            "Digital signature",
-            "Steganography"
-          ],
+          "options": ["Hash", "Symmetric encryption", "Digital signature", "Steganography"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "hashing-and-digital-signatures"
-          ]
+          "tags": ["domain-1", "hashing-and-digital-signatures"]
         },
         {
           "type": "mcq",
@@ -359,26 +216,15 @@
             "Integrate an HSM"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "encryption-technologies"
-          ]
+          "tags": ["domain-1", "encryption-technologies"]
         },
         {
           "type": "mcq",
           "front": "A user has opened a helpdesk ticket complaining of poor system performance, excessive pop up messages, and the cursor moving without anyone touching the mouse. This issue began after they opened a spreadsheet from a vendor containing part numbers and pricing information. Which of the following is MOST likely the cause of this user's issues?",
           "back": "Trojan horse. Since a Trojan horse is usually disguised as legitimate software, the victim often doesn’t realize they’re installing malware. Once the Trojan is installed, the attacker can install additional software to control the infected system.",
-          "options": [
-            "Worm",
-            "Trojan horse",
-            "Logic bomb",
-            "On-path"
-          ],
+          "options": ["Worm", "Trojan horse", "Logic bomb", "On-path"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "an-overview-of-malware"
-          ]
+          "tags": ["domain-1", "an-overview-of-malware"]
         },
         {
           "type": "mcq",
@@ -391,26 +237,15 @@
             "The server is a honeypot for attracting potential attackers"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "deception-and-disruption"
-          ]
+          "tags": ["domain-1", "deception-and-disruption"]
         },
         {
           "type": "mcq",
           "front": "A shipping company stores information in small regional warehouses around the country. The company maintains an IPS at each warehouse to watch for suspicious traffic patterns. Which of the following would BEST describe the security control used at the warehouse?",
           "back": "Detective. An IPS can detect, alert, and log an intrusion attempt. The IPS could also be categorized as a preventive control, since it has the ability to actively block known attacks.",
-          "options": [
-            "Directive",
-            "Detective",
-            "Deterrent",
-            "Compensating"
-          ],
+          "options": ["Directive", "Detective", "Deterrent", "Compensating"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "security-controls"
-          ]
+          "tags": ["domain-1", "security-controls"]
         },
         {
           "type": "mcq",
@@ -423,42 +258,23 @@
             "Full disk encryption"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "encrypting-data"
-          ]
+          "tags": ["domain-1", "encrypting-data"]
         },
         {
           "type": "mcq",
           "front": "A company is concerned about security issues at their remote sites. Which of the following would provide the IT team with more information of potential shortcomings?",
           "back": "Gap analysis. A gap analysis is a formal process comparing the current security posture with where the company would like to be. This often examines many different aspects of the overall security environment.",
-          "options": [
-            "Policy engineer",
-            "Change management",
-            "Dependency list",
-            "Gap analysis"
-          ],
+          "options": ["Policy engineer", "Change management", "Dependency list", "Gap analysis"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "gap-analysis"
-          ]
+          "tags": ["domain-1", "gap-analysis"]
         },
         {
           "type": "mcq",
           "front": "An organization has developed an in-house mobile system app for order processing. The developers would like the app to detect revoked server certificates without sending any traffic over the corporate Internet connection. Which of the following must be configured to allow this functionality?",
           "back": "OCSP stapling. The use of OCSP (Online Certificate Status Protocol) requires communication between the client and the issuing CA (Certificate Authority). If the CA is an external organization, then validation checks will communicate across the Internet. The certificate holder can verify their own status and avoid client Internet traffic by storing the status information on an internal server and “stapling” the OCSP status into the SSL/TLS handshake.",
-          "options": [
-            "CSR generation",
-            "OCSP stapling",
-            "Key escrow",
-            "Wildcard"
-          ],
+          "options": ["CSR generation", "OCSP stapling", "Key escrow", "Wildcard"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "certificates"
-          ]
+          "tags": ["domain-1", "certificates"]
         },
         {
           "type": "mcq",
@@ -471,10 +287,7 @@
             "The user’s computer does not support WPA3 encryption"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "certificates"
-          ]
+          "tags": ["domain-1", "certificates"]
         },
         {
           "type": "mcq",
@@ -487,90 +300,47 @@
             "Penetration testing"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "change-management-process"
-          ]
+          "tags": ["domain-1", "change-management-process"]
         },
         {
           "type": "mcq",
           "front": "An application developer is creating a mobile system app that will require a true random number generator real-time memory encryption. Which of the following technologies would be the BEST choice for this app?",
           "back": "Secure enclave. A secure enclave describes a hardware processor designed for security. The secure enclave monitors the boot process, create true random numbers, store root cryptography keys, and much more.",
-          "options": [
-            "Secure enclave",
-            "NGFW",
-            "Self-signed certificates",
-            "HSM"
-          ],
+          "options": ["Secure enclave", "NGFW", "Self-signed certificates", "HSM"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "encryption-technologies"
-          ]
+          "tags": ["domain-1", "encryption-technologies"]
         },
         {
           "type": "mcq",
           "front": "A device administrator has protected a set of device backups with an encryption key. The device administrator used the same key when restoring files from this backup. Which of the following would BEST describe this encryption type?",
           "back": "Symmetric. Symmetric encryption uses the same key for both encryption and decryption.",
-          "options": [
-            "Key escrow",
-            "Symmetric",
-            "Out-of-band key exchange",
-            "Asymmetric"
-          ],
+          "options": ["Key escrow", "Symmetric", "Out-of-band key exchange", "Asymmetric"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "public-key-infrastructure"
-          ]
+          "tags": ["domain-1", "public-key-infrastructure"]
         },
         {
           "type": "mcq",
           "front": "When a person enters a data center facility, they must check-in before they are allowed to move further into the building. People who are leaving must be formally checked-out before they are able to exit the building. Which of the following would BEST facilitate this process?",
           "back": "Access control vestibule. An access control vestibule is commonly used to control the flow of people through a particular area. Unlocking the one door of the vestibule commonly restricts the other door from opening, thereby preventing someone from walking through without stopping. It’s common in large data centers to have a single room as the access control vestibule where users are checked in and out of the facility.",
-          "options": [
-            "Bollards",
-            "Access control vestibule",
-            "Air gap",
-            "Pressure sensors"
-          ],
+          "options": ["Bollards", "Access control vestibule", "Air gap", "Pressure sensors"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "physical-security"
-          ]
+          "tags": ["domain-1", "physical-security"]
         },
         {
           "type": "mcq",
           "front": "A security engineer has find an employee exfiltrating confidential company information by embedding data within image files and emailing the images to a third-party. Which of the following would best describe this activity?",
           "back": "Steganography. Steganography is the process of hiding information within another document. For example, one common method of steganography embeds data or documents within image files.",
-          "options": [
-            "Digital signatures",
-            "Steganography",
-            "Salting",
-            "Data masking"
-          ],
+          "options": ["Digital signatures", "Steganography", "Salting", "Data masking"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "obfuscation"
-          ]
+          "tags": ["domain-1", "obfuscation"]
         },
         {
           "type": "mcq",
           "front": "A device administrator is designing a data center for an insurance company’s new public cloud and would like to automatically rotate encryption keys on a regular basis. Which of the following would provide this functionality?",
           "back": "Key management device. A key management system is used to manage large security key implementations from a central console. This includes creating keys, associating keys with individuals, rotating keys on regular intervals, and logging all key use.",
-          "options": [
-            "TPM",
-            "Key management device",
-            "Secure enclave",
-            "XDR"
-          ],
+          "options": ["TPM", "Key management device", "Secure enclave", "XDR"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "encryption-technologies"
-          ]
+          "tags": ["domain-1", "encryption-technologies"]
         },
         {
           "type": "mcq",
@@ -583,10 +353,7 @@
             "Digitally sign with Sam’s public key"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "hashing-and-digital-signatures"
-          ]
+          "tags": ["domain-1", "hashing-and-digital-signatures"]
         },
         {
           "type": "mcq",
@@ -599,58 +366,31 @@
             "Change management procedures"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "change-management-process"
-          ]
+          "tags": ["domain-1", "change-management-process"]
         },
         {
           "type": "mcq",
           "front": "A security engineer would like to minimize the number of certificate status checks made by web site clients to the certificate authority. Which of the following would be the BEST option for this requirement?",
           "back": "OCSP stapling. OCSP (Online Certificate Status Protocol) stapling allows the certificate holder verify their own certificate status. The OCSP status is commonly “stapled” into the SSL/TLS handshake process. Instead of contacting the certificate authority to verify the certificate, the verification is included with the initial network connection to the server.",
-          "options": [
-            "Wildcards",
-            "OCSP stapling",
-            "Self-signed certificates",
-            "CRL"
-          ],
+          "options": ["Wildcards", "OCSP stapling", "Self-signed certificates", "CRL"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "certificates"
-          ]
+          "tags": ["domain-1", "certificates"]
         },
         {
           "type": "mcq",
           "front": "A company is concerned their EDR solution will not be able to stop more advanced ransomware variants. Technicians have created a backup and restore utility to get most systems up and running less than an hour after an attack. What type of security control is associated with this restore process?",
           "back": "Compensating. Instead of preventing an attack, a compensating control is used to restore systems using other means. A streamlined backup and restore process compensates for the limited security features of the EDR (Endpoint Detection and Response) software.",
-          "options": [
-            "Directive",
-            "Compensating",
-            "Preventive",
-            "Detective"
-          ],
+          "options": ["Directive", "Compensating", "Preventive", "Detective"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "security-controls"
-          ]
+          "tags": ["domain-1", "security-controls"]
         },
         {
           "type": "mcq",
           "front": "To upgrade an internal application, the development team provides the operations team with instructions for backing up, patching the application, and reverting the patch if needed. The operations team schedules a date for the upgrade, informs the business divisions, and tests the upgrade process after completion. Which of the following describes this process?",
           "back": "Change management. Change management is the process for making any type of change, such as a software upgrade, a hardware replacement, or any other type of modification to the existing environment. Having a formal change management process minimizes the risk of a change and makes everyone aware of the changes as they occur.",
-          "options": [
-            "Continuity planning",
-            "Usage auditing",
-            "Change management",
-            "Code signing"
-          ],
+          "options": ["Continuity planning", "Usage auditing", "Change management", "Code signing"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "change-management-process"
-          ]
+          "tags": ["domain-1", "change-management-process"]
         },
         {
           "type": "mcq",
@@ -663,42 +403,23 @@
             "Zone configurations"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "zero-trust"
-          ]
+          "tags": ["domain-1", "zero-trust"]
         },
         {
           "type": "mcq",
           "front": "A organization would like to automatically monitor and report on any movement occurring in an open field at the data center. Which of the following would be the BEST choice for this task?",
           "back": "Microwave sensor. Microwave sensors can detect movement across large areas such as open fields.",
-          "options": [
-            "Fencing",
-            "Bollard",
-            "Microwave sensor",
-            "Access control vestibule"
-          ],
+          "options": ["Fencing", "Bollard", "Microwave sensor", "Access control vestibule"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "physical-security"
-          ]
+          "tags": ["domain-1", "physical-security"]
         },
         {
           "type": "mcq",
           "front": "A device administrator would like to prove an email message was sent by a specific person. Which of the following describes the verification of this message source?",
           "back": "Non-repudiation. Non-repudiation is used to verify the source of data or a message. Digital signatures are commonly used for non-repudiation.",
-          "options": [
-            "Key escrow",
-            "Asymmetric encryption",
-            "Steganography",
-            "Non-repudiation"
-          ],
+          "options": ["Key escrow", "Asymmetric encryption", "Steganography", "Non-repudiation"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-1",
-            "non-repudiation"
-          ]
+          "tags": ["domain-1", "non-repudiation"]
         },
         {
           "type": "mcq",
@@ -711,58 +432,31 @@
             "Securely store passwords"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-1",
-            "key-exchange"
-          ]
+          "tags": ["domain-1", "key-exchange"]
         },
         {
           "type": "mcq",
           "front": "Each salesperson in a company receives a laptop with applications and data to support their sales efforts. The IT manager would like to prevent third-parties from gaining access to this information if the laptop is stolen. Which of the following would be the BEST way to protect this data?",
           "back": "Full disk encryption. With full disk encryption, everything written to the laptop’s local drive is stored as encrypted data. If the laptop was stolen, the thief would not have the credentials to decrypt the drive data.",
-          "options": [
-            "VPN",
-            "Remote wipe",
-            "Full disk encryption",
-            "Biometrics"
-          ],
+          "options": ["VPN", "Remote wipe", "Full disk encryption", "Biometrics"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-1",
-            "encrypting-data"
-          ]
+          "tags": ["domain-1", "encrypting-data"]
         },
         {
           "type": "mcq",
           "front": "What type of security control would be associated with corporate security policies?",
           "back": "Managerial. A managerial control type is associated with security design and implementation. Security policies and standard operating procedures are common examples of a managerial control type.",
-          "options": [
-            "Managerial",
-            "Physical",
-            "Technical",
-            "Operational"
-          ],
+          "options": ["Managerial", "Physical", "Technical", "Operational"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "security-controls"
-          ]
+          "tags": ["domain-1", "security-controls"]
         },
         {
           "type": "mcq",
           "front": "A systems engineer has been tasked with performing an application upgrade, but the upgrade has been delayed due to a different scheduled installation of an outdated device driver. Which of the following issues would best describe this change management delay?",
           "back": "Dependency. Modifying one part of a system may first require changes to other components. In this example, the application upgrade is dependent on an updated version of a device driver.",
-          "options": [
-            "Dependency",
-            "Restricted activity",
-            "Deny list",
-            "Legacy application"
-          ],
+          "options": ["Dependency", "Restricted activity", "Deny list", "Legacy application"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-1",
-            "technical-change-management"
-          ]
+          "tags": ["domain-1", "technical-change-management"]
         }
       ]
     },
@@ -775,35 +469,17 @@
           "type": "mcq",
           "front": "A CFO receives a highly personalized email appearing to come from the CEO demanding an urgent wire transfer to a new vendor. What type of attack is this?",
           "back": "Whaling. Whaling is a targeted phishing attack directed specifically at high-value individuals such as executives. It is more personalized than standard phishing or spear phishing.",
-          "options": [
-            "Spear phishing",
-            "Business email compromise",
-            "Whaling",
-            "Vishing"
-          ],
+          "options": ["Spear phishing", "Business email compromise", "Whaling", "Vishing"],
           "correctOptionIndex": 2,
-          "tags": [
-            "social-engineering",
-            "phishing",
-            "domain-2"
-          ]
+          "tags": ["social-engineering", "phishing", "domain-2"]
         },
         {
           "type": "mcq",
           "front": "After opening an email attachment, a user finds all their files encrypted and a note demanding cryptocurrency payment for decryption. Which malware type is responsible?",
           "back": "Ransomware. Ransomware encrypts victim files and demands payment for the decryption key. It is often delivered via phishing emails or malicious attachments.",
-          "options": [
-            "Spyware",
-            "Rootkit",
-            "Ransomware",
-            "Adware"
-          ],
+          "options": ["Spyware", "Rootkit", "Ransomware", "Adware"],
           "correctOptionIndex": 2,
-          "tags": [
-            "malware",
-            "ransomware",
-            "domain-2"
-          ]
+          "tags": ["malware", "ransomware", "domain-2"]
         },
         {
           "type": "mcq",
@@ -816,11 +492,7 @@
             "Common Vulnerability and Exposure (CVE)"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "vulnerability",
-            "zero-day",
-            "domain-2"
-          ]
+          "tags": ["vulnerability", "zero-day", "domain-2"]
         },
         {
           "type": "mcq",
@@ -833,45 +505,23 @@
             "Directory traversal"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "sql-injection",
-            "application-attack",
-            "domain-2"
-          ]
+          "tags": ["sql-injection", "application-attack", "domain-2"]
         },
         {
           "type": "mcq",
           "front": "An attacker calls the help desk claiming to be from IT vendor support and convinces an employee to provide remote access credentials. What social engineering technique is this?",
           "back": "Pretexting. Pretexting involves creating a fabricated scenario (the 'pretext') to manipulate someone into revealing information or granting access. The attacker impersonates a trusted role to gain credibility.",
-          "options": [
-            "Baiting",
-            "Tailgating",
-            "Pretexting",
-            "Vishing"
-          ],
+          "options": ["Baiting", "Tailgating", "Pretexting", "Vishing"],
           "correctOptionIndex": 2,
-          "tags": [
-            "social-engineering",
-            "pretexting",
-            "domain-2"
-          ]
+          "tags": ["social-engineering", "pretexting", "domain-2"]
         },
         {
           "type": "mcq",
           "front": "Which type of malware is self-replicating, spreads automatically across networks without user interaction, and does not require a host file?",
           "back": "Worm. Unlike viruses, worms are self-contained and spread without needing to attach to a host file or requiring user action. They exploit network vulnerabilities to propagate.",
-          "options": [
-            "Trojan horse",
-            "Virus",
-            "Worm",
-            "Spyware"
-          ],
+          "options": ["Trojan horse", "Virus", "Worm", "Spyware"],
           "correctOptionIndex": 2,
-          "tags": [
-            "malware",
-            "worm",
-            "domain-2"
-          ]
+          "tags": ["malware", "worm", "domain-2"]
         },
         {
           "type": "mcq",
@@ -884,10 +534,7 @@
             "Bug bounty program"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "vulnerability-management",
-            "domain-2"
-          ]
+          "tags": ["vulnerability-management", "domain-2"]
         },
         {
           "type": "mcq",
@@ -900,27 +547,15 @@
             "Session hijacking"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "network-attack",
-            "mitm",
-            "domain-2"
-          ]
+          "tags": ["network-attack", "mitm", "domain-2"]
         },
         {
           "type": "mcq",
           "front": "Which of these threat actors would be MOST likely to attack systems for direct financial gain?",
           "back": "Organized crime. An organized crime actor is motivated by money, and their hacking objectives are usually based around objectives that can be easily exchanged for financial capital.",
-          "options": [
-            "Nation state",
-            "Shadow IT",
-            "Organized crime",
-            "Hacktivist"
-          ],
+          "options": ["Nation state", "Shadow IT", "Organized crime", "Hacktivist"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "threat-actors"
-          ]
+          "tags": ["domain-2", "threat-actors"]
         },
         {
           "type": "mcq",
@@ -933,42 +568,23 @@
             "Monitor removable media usage in host-based firewall logs"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
           "front": "A user link to a third-party website and obtain this message: Your connection is not private. NET::ERR_CERT_INVALID Which of the following attacks would be the MOST likely reason for this message?",
           "back": "On-path. An on-path attack is often associated with a third-party who is actively intercepting network traffic. This entity in the middle would not be able to provide a valid SSL certificate for a third-party website, and this error would appear in the browser as a warning.",
-          "options": [
-            "On-path",
-            "Deauthentication",
-            "Brute force",
-            "DoS"
-          ],
+          "options": ["On-path", "Deauthentication", "Brute force", "DoS"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "on-path-attacks"
-          ]
+          "tags": ["domain-2", "on-path-attacks"]
         },
         {
           "type": "mcq",
           "front": "An attacker calls into a organization’s help desk and pretends to be the director of the organization’s manufacturing department. The attacker states that they have forgotten their password and they need to have the password reset quickly for an important meeting. What kind of attack would BEST describe this phone call?",
           "back": "Social engineering. This social engineering attack uses impersonation to take advantage of authority and urgency principles in an effort to convince someone else to circumvent normal security controls.",
-          "options": [
-            "Supply chain",
-            "Watering hole",
-            "On-path",
-            "Social engineering"
-          ],
+          "options": ["Supply chain", "Watering hole", "On-path", "Social engineering"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "impersonation"
-          ]
+          "tags": ["domain-2", "impersonation"]
         },
         {
           "type": "mcq",
@@ -981,10 +597,7 @@
             "Malicious update"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "race-conditions"
-          ]
+          "tags": ["domain-2", "race-conditions"]
         },
         {
           "type": "mcq",
@@ -997,74 +610,39 @@
             "Configuration enforcement"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "mitigation-techniques"
-          ]
+          "tags": ["domain-2", "mitigation-techniques"]
         },
         {
           "type": "mcq",
           "front": "A remote user has received a text message with a link to login and verify their upcoming work schedule. Which of the following would BEST describe this attack?",
           "back": "Smishing. Smishing, or SMS (Short Message Service) phishing, is a social engineering attack that asks for sensitive information using SMS or text messages.",
-          "options": [
-            "Typosquatting",
-            "Smishing",
-            "Brute force",
-            "Watering hole"
-          ],
+          "options": ["Typosquatting", "Smishing", "Brute force", "Watering hole"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "phishing"
-          ]
+          "tags": ["domain-2", "phishing"]
         },
         {
           "type": "mcq",
           "front": "A server administrator at a bank has noticed a decrease in the number of visitors to the bank's website. Additional research shows that users are being directed to a different IP address than the bank's web server. Which of the following would MOST likely describe this attack?",
           "back": "DNS poisoning. A DNS poisoning can modify a DNS server to modify the IP address provided during the name resolution process. If an attacker modifies the DNS information, they can direct client computers to any destination IP address.",
-          "options": [
-            "DDoS",
-            "Buffer overflow",
-            "DNS poisoning",
-            "Deauthentication"
-          ],
+          "options": ["DDoS", "Buffer overflow", "DNS poisoning", "Deauthentication"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "dns-attacks"
-          ]
+          "tags": ["domain-2", "dns-attacks"]
         },
         {
           "type": "mcq",
           "front": "An attacker has find a way to disable a server by sending specially crafted packets from many remote devices to the operating system. When the packet is received, the system crashes and must be rebooted to restore normal operations. Which of the following would BEST describe this attack?",
           "back": "DDoS. A DDoS (Distributed Denial of Service) is an attack that overwhelms or disables a service to prevent the service from operating normally. Packets from multiple devices that disable a server would be an example of a DDoS attack.",
-          "options": [
-            "Replay attack",
-            "DDoS",
-            "Privilege escalation",
-            "SQL injection"
-          ],
+          "options": ["Replay attack", "DDoS", "Privilege escalation", "SQL injection"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "denial-of-service"
-          ]
+          "tags": ["domain-2", "denial-of-service"]
         },
         {
           "type": "mcq",
           "front": "A network team has installed new access points to support an application launch. In less than 24 hours, the wireless network was attacked and private organization information was accessed. Which of the following would be the MOST likely reason for this breach?",
           "back": "Misconfiguration. There are many different configuration options when installing an access point, and it's likely one of those options allowed an attacker to gain access to the internal network.",
-          "options": [
-            "Race condition",
-            "Jailbreaking",
-            "Impersonation",
-            "Misconfiguration"
-          ],
+          "options": ["Race condition", "Jailbreaking", "Impersonation", "Misconfiguration"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "misconfiguration-vulnerabilities"
-          ]
+          "tags": ["domain-2", "misconfiguration-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -1077,10 +655,7 @@
             "End-of-life"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "hardware-vulnerabilities"
-          ]
+          "tags": ["domain-2", "hardware-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -1093,58 +668,31 @@
             "Decommissioning"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "mitigation-techniques"
-          ]
+          "tags": ["domain-2", "mitigation-techniques"]
         },
         {
           "type": "mcq",
           "front": "A organization's website has been compromised and the website content has been replaced with a political message. Which of the following threat actors would be the MOST likely culprit?",
           "back": "Hacktivist. A hacktivist is motivated by a particular philosophy, and their goal is to spread their message by defacing web sites and releasing private documents.",
-          "options": [
-            "Insider",
-            "Organized crime",
-            "Shadow IT",
-            "Hacktivist"
-          ],
+          "options": ["Insider", "Organized crime", "Shadow IT", "Hacktivist"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "threat-actors"
-          ]
+          "tags": ["domain-2", "threat-actors"]
         },
         {
           "type": "mcq",
           "front": "An attacker has sent more information than expected in a single API call, and this has allowed the execution of arbitrary code. Which of the following would BEST describe this attack?",
           "back": "Buffer overflow. The results of a buffer overflow can cause random results, but sometimes the actions can be repeatable and controlled. In the best possible case for the hacker, a buffer overflow can be manipulated to execute code on the remote device.",
-          "options": [
-            "Replay attack",
-            "Cross-site scripting",
-            "DDoS",
-            "Buffer overflow"
-          ],
+          "options": ["Replay attack", "Cross-site scripting", "DDoS", "Buffer overflow"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "buffer-overflows"
-          ]
+          "tags": ["domain-2", "buffer-overflows"]
         },
         {
           "type": "mcq",
           "front": "A company is in the process of configuring and enabling host-based firewalls on all user devices. Which of the following threats is the company addressing?",
           "back": "Instant messaging. Instant messaging is commonly used as an attack vector, and one way to help protect against malicious links delivered by instant messaging is a host-based firewall.",
-          "options": [
-            "On-path",
-            "Default credentials",
-            "Vishing",
-            "Instant messaging"
-          ],
+          "options": ["On-path", "Default credentials", "Vishing", "Instant messaging"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
@@ -1157,42 +705,23 @@
             "Create separate VLANs for the corporate network and the manufacturing floor"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "segmentation-and-access-control"
-          ]
+          "tags": ["domain-2", "segmentation-and-access-control"]
         },
         {
           "type": "mcq",
           "front": "A user with restricted access has typed this text in a search field of an internal web-based application: USER77' OR '1'='1 After submitting this search request, all database records are displayed on the screen. Which of the following would BEST describe this search?",
           "back": "SQL injection. SQL (Structured Query Language) injection takes advantage of poor input validation to circumvent the application and allows the attacker to query the database directly.",
-          "options": [
-            "Cross-site scripting",
-            "Buffer overflow",
-            "SQL injection",
-            "SSL stripping"
-          ],
+          "options": ["Cross-site scripting", "Buffer overflow", "SQL injection", "SSL stripping"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "sql-injection"
-          ]
+          "tags": ["domain-2", "sql-injection"]
         },
         {
           "type": "mcq",
           "front": "A security manager has created a report showing intermittent network communication from certain workstations on the internal network to one external IP address. These traffic patterns occur at random times during the day. Which of the following would be the MOST likely reason for these traffic patterns?",
           "back": "Keylogger. A keylogger captures keystrokes and occasionally transmits this information to the attacker for analysis. The traffic patterns identified by the security manager could potentially be categorized as malicious keylogger transfers.",
-          "options": [
-            "Brute force",
-            "On-path attack",
-            "Keylogger",
-            "Replay attack"
-          ],
+          "options": ["Brute force", "On-path attack", "Keylogger", "Replay attack"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "other-malware-types"
-          ]
+          "tags": ["domain-2", "other-malware-types"]
         },
         {
           "type": "mcq",
@@ -1205,42 +734,23 @@
             "Host hardening"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "hardening-techniques"
-          ]
+          "tags": ["domain-2", "hardening-techniques"]
         },
         {
           "type": "mcq",
           "front": "A user in the accounting department has received a text message from the CEO. The message requests payment by cryptocurrency for a recently purchased tablet. Which of the following would BEST describe this attack?",
           "back": "Smishing. Smishing is phishing using SMS (Short Message Service), and is more commonly referenced as text messaging. A message allegedly from the CEO asking for an unusual payments using cryptocurrency or gift cards would be categorized as smishing.",
-          "options": [
-            "Smishing",
-            "Typosquatting",
-            "Brand impersonation",
-            "Watering hole attack"
-          ],
+          "options": ["Smishing", "Typosquatting", "Brand impersonation", "Watering hole attack"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "phishing"
-          ]
+          "tags": ["domain-2", "phishing"]
         },
         {
           "type": "mcq",
           "front": "A organization has been informed of a hypervisor vulnerability that could allow users on one virtual machine to access resources on another virtual machine. Which of the following would BEST describe this vulnerability?",
           "back": "Escape. A VM (Virtual Machine) escape is a vulnerability that allows communication between separate VMs.",
-          "options": [
-            "Escape",
-            "Containerization",
-            "Jailbreaking",
-            "SDN"
-          ],
+          "options": ["Escape", "Containerization", "Jailbreaking", "SDN"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "virtualization-vulnerabilities"
-          ]
+          "tags": ["domain-2", "virtualization-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -1253,10 +763,7 @@
             "DNS poisoning"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "dns-attacks"
-          ]
+          "tags": ["domain-2", "dns-attacks"]
         },
         {
           "type": "mcq",
@@ -1269,58 +776,31 @@
             "Remote access clients on the mobile devices"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
           "front": "A system engineer would like to segment the network to give the marketing, accounting, and manufacturing departments their own private network. The network communication between departments would be restricted for additional security. Which of the following should be configured on this network?",
           "back": "VLAN. A VLAN (Virtual Local Area Network) is a common method of using a switch to logically segment a network. The devices in each segmented VLAN can only communicate with other devices in the same VLAN. A router is used to connect VLANs, and this router can often be used to control traffic flows between the VLANs.",
-          "options": [
-            "VLAN",
-            "SDN",
-            "VPN",
-            "RBAC"
-          ],
+          "options": ["VLAN", "SDN", "VPN", "RBAC"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "segmentation-and-access-control"
-          ]
+          "tags": ["domain-2", "segmentation-and-access-control"]
         },
         {
           "type": "mcq",
           "front": "Which of these threat actors would be MOST likely to install a company's internal application on a public cloud provider?",
           "back": "Shadow IT. Shadow IT is an internal organization within the company but is not part of the IT department. Shadow IT often circumvents or ignores existing IT policies to build their own infrastructure with company resources.",
-          "options": [
-            "Organized crime",
-            "Nation state",
-            "Shadow IT",
-            "Hacktivist"
-          ],
+          "options": ["Organized crime", "Nation state", "Shadow IT", "Hacktivist"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "threat-actors"
-          ]
+          "tags": ["domain-2", "threat-actors"]
         },
         {
           "type": "mcq",
           "front": "In the past, an organization has relied on the curated Apple App Store to avoid issues associated with malware and insecure applications. However, the IT department has find an iPhone in the shipping department with applications not available on the Apple App Store. How did the shipping department user install these apps on their mobile system?",
           "back": "Side loading. If Apple’s iOS has been circumvented using jailbreaking, a user can install apps without using the Apple App Store. Circumventing a curated app store to install an app manually is called side loading.",
-          "options": [
-            "VM escape",
-            "Cross-site scripting",
-            "Side loading",
-            "Unauthorized update"
-          ],
+          "options": ["VM escape", "Cross-site scripting", "Side loading", "Unauthorized update"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "mobile-device-vulnerabilities"
-          ]
+          "tags": ["domain-2", "mobile-device-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -1333,58 +813,31 @@
             "Default credentials"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
           "front": "A security administrator attends an annual industry convention with other security professionals from around the world. Which of the following attacks would be MOST likely in this situation?",
           "back": "Watering hole. A watering hole attack infects a third-party visited by the intended victims. An industry convention would be a perfect location to attack security professionals.",
-          "options": [
-            "Watering hole",
-            "Smishing",
-            "Supply chain",
-            "SQL injection"
-          ],
+          "options": ["Watering hole", "Smishing", "Supply chain", "SQL injection"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "watering-hole-attacks"
-          ]
+          "tags": ["domain-2", "watering-hole-attacks"]
         },
         {
           "type": "mcq",
           "front": "A Linux administrator has obtain a ticket complaining of response issues with a database host. After connecting to the host, the administrator views this information: Filesystem /dev/xvda1 Size 158G Used Avail Use% Mounted on 158G 0 100% / Which of the following would BEST describe this information?",
           "back": "Resource consumption. The available storage on the local filesystem has been depleted, and the information shows 0 bytes available. More drive space would need to be available for the server to return to normal response times.",
-          "options": [
-            "SQL injection",
-            "Race condition",
-            "Buffer overflow",
-            "Resource consumption"
-          ],
+          "options": ["SQL injection", "Race condition", "Buffer overflow", "Resource consumption"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "indicators-of-compromise"
-          ]
+          "tags": ["domain-2", "indicators-of-compromise"]
         },
         {
           "type": "mcq",
           "front": "An threat actor has created multiple social media accounts and is posting information in an attempt to get the attention of the media. Which of the following would BEST describe this attack?",
           "back": "Misinformation campaign. Misinformation campaigns are carefully crafted attacks that exploit social media and traditional media.",
-          "options": [
-            "Misinformation campaign",
-            "Phishing",
-            "On-path",
-            "Watering hole"
-          ],
+          "options": ["Misinformation campaign", "Phishing", "On-path", "Watering hole"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "other-social-engineering-attacks"
-          ]
+          "tags": ["domain-2", "other-social-engineering-attacks"]
         },
         {
           "type": "mcq",
@@ -1397,10 +850,7 @@
             "Block all unknown outbound network traffic at the Internet firewall"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "other-malware-types"
-          ]
+          "tags": ["domain-2", "other-malware-types"]
         },
         {
           "type": "mcq",
@@ -1413,15 +863,12 @@
             "Two different messages share the same hash"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "cryptographic-attacks"
-          ]
+          "tags": ["domain-2", "cryptographic-attacks"]
         },
         {
           "type": "mcq",
           "front": "A security administrator has been tasked with hardening all internal web servers to control access from certain IP address ranges and guarantee all transferred data remains confidential. Which of the following should the administrator include in his project plan? (Select TWO)",
-          "back": "Use HTTPS for all host communication. D. Enable a host-based firewall Using the secure HTTPS (Hypertext Transfer Protocol Secure) protocol will ensure that all network communication is encrypted between the web server and the client devices. A host-based firewall can be used to allow or disallow traffic from certain IP address ranges.",
+          "back": "Use HTTPS for all host communication. C. Enable a host-based firewall Using the secure HTTPS (Hypertext Transfer Protocol Secure) protocol will ensure that all network communication is encrypted between the web server and the client devices. A host-based firewall can be used to allow or disallow traffic from certain IP address ranges.",
           "options": [
             "Use HTTPS for all host communication",
             "Uninstall all unused software",
@@ -1429,10 +876,8 @@
             "Change the administrator password"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "hardening-techniques"
-          ]
+          "correctOptionIndices": [0, 2],
+          "tags": ["domain-2", "hardening-techniques"]
         },
         {
           "type": "mcq",
@@ -1445,10 +890,7 @@
             "Spoofing of internal IP addresses when accessing an intranet server"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "threat-actors"
-          ]
+          "tags": ["domain-2", "threat-actors"]
         },
         {
           "type": "mcq",
@@ -1461,90 +903,47 @@
             "Resource consumption"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "replay-attacks"
-          ]
+          "tags": ["domain-2", "replay-attacks"]
         },
         {
           "type": "mcq",
           "front": "When link to the wireless network, users at a remote site obtain an IP address which is not part of the corporate address scheme. Communication over this network is also slower than the wireless connections elsewhere in the building. Which of the following would be the MOST likely reason for these issues?",
           "back": "Rogue access point. A rogue access point is an unauthorized access point added by a user or attacker. This access point may not necessarily be malicious, but it does create significant security concerns and unauthorized access to the corporate network.",
-          "options": [
-            "Encryption is enabled",
-            "Rogue access point",
-            "Domain hijack",
-            "DDoS"
-          ],
+          "options": ["Encryption is enabled", "Rogue access point", "Domain hijack", "DDoS"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
           "front": "A security engineer is reviewing a report showing a number of devices on internal networks are connecting with servers in the data center infrastructure. Which of the following security systems should be added to prevent internal systems from accessing data center devices?",
           "back": "ACL. An ACL (Access Control List) is a security control commonly implemented on routers to allow or restrict traffic flows through the network.",
-          "options": [
-            "ACL",
-            "VPN",
-            "IPS",
-            "SIEM"
-          ],
+          "options": ["ACL", "VPN", "IPS", "SIEM"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "segmentation-and-access-control"
-          ]
+          "tags": ["domain-2", "segmentation-and-access-control"]
         },
         {
           "type": "mcq",
           "front": "A user in the mail room has reported an overall slowdown of his shipping management software. An anti-virus scan did not detect any issues, but a more thorough malware scan detect a kernel driver which is not part of the original operating system installation. Which of the following malware was installed on this system?",
           "back": "Rootkit. A rootkit often modifies core system files and becomes effectively invisible to the rest of the operating system. The modification of system files and specialized kernel-level drivers are common rootkit techniques.",
-          "options": [
-            "Logic bomb",
-            "Bloatware",
-            "Ransomware",
-            "Rootkit"
-          ],
+          "options": ["Logic bomb", "Bloatware", "Ransomware", "Rootkit"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "other-malware-types"
-          ]
+          "tags": ["domain-2", "other-malware-types"]
         },
         {
           "type": "mcq",
           "front": "A company maintains a server farm in a large data center. These servers are used internally and are not accessible from outside of the data center. The security team has find a group of servers was breached before the latest security patches were applied. Breach attempts were not logged on any other servers. Which of these threat actors would be MOST likely involved in this breach?",
           "back": "Insider. None of these servers are accessible from the outside, and the only servers with any logged connections were also susceptible to the latest vulnerabilities. To complete this attack, there would need a very specific knowledge of the vulnerable systems and a way to communicate with those servers.",
-          "options": [
-            "Insider",
-            "Nation state",
-            "Unskilled attacker",
-            "Organized crime"
-          ],
+          "options": ["Insider", "Nation state", "Unskilled attacker", "Organized crime"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "threat-actors"
-          ]
+          "tags": ["domain-2", "threat-actors"]
         },
         {
           "type": "mcq",
           "front": "A user downloaded and installed a utility for compressing and decompressing files. Immediately after installing the utility, the user’s overall workstation performance degraded and it now takes twice as much time to perform any tasks on the computer. Which of the following is the BEST description of this malware infection?",
           "back": "Trojan. A Trojan horse is malicious software that pretends to be something benign. The user will install the software with the expectation that it will perform a particular function, but in reality it is installing malware on the computer.",
-          "options": [
-            "Trojan",
-            "Ransomware",
-            "Bloatware",
-            "Logic bomb"
-          ],
+          "options": ["Trojan", "Ransomware", "Bloatware", "Logic bomb"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "an-overview-of-malware"
-          ]
+          "tags": ["domain-2", "an-overview-of-malware"]
         },
         {
           "type": "mcq",
@@ -1557,15 +956,12 @@
             "Unsupported systems"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
           "front": "A security administrator is installing a web host with a newly built operating system. Which of the following would be the best way to harden this OS?",
-          "back": "Remove unnecessary software. The SQL injection is contained in the application data. The attacker was attempting to circumvent the authentication through the use of equivalent SQL statements ('x'='x').",
+          "back": "Remove unnecessary software. The process of hardening an operating system makes it more difficult to attack. The only step that limits the attack surface is removing any unnecessary or unused software.",
           "options": [
             "Create a backup schedule",
             "Install a device certificate",
@@ -1573,58 +969,31 @@
             "Disable power management features"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "sql-injection"
-          ]
+          "tags": ["domain-2", "hardening-techniques"]
         },
         {
           "type": "mcq",
           "front": "A security administrator is reviewing authentication logs. The logs show a large number of accounts with at least three failed authentication attempts during the previous week. Which of the following would BEST explain this report data?",
           "back": "Spraying. A spraying attack attempts to discover login credentials using a small number of authentication attempts. If the password isn't discovered in those few attempts, the brute force process stops before any account lockouts occur. An attacker could potentially perform a spraying attack across many accounts without any noticeable alerts or alarms.",
-          "options": [
-            "Phishing",
-            "Injection",
-            "Spraying",
-            "Downgrade attack"
-          ],
+          "options": ["Phishing", "Injection", "Spraying", "Downgrade attack"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "password-attacks"
-          ]
+          "tags": ["domain-2", "password-attacks"]
         },
         {
           "type": "mcq",
           "front": "A device administrator is viewing this output from a file integrity monitoring report: 15:43:01 - Repairing corrupted file C:\\Windows\\System32\\kernel32.dll 15:43:03 - Repairing corrupted file C:\\Windows\\System32\\netapi32.dll 15:43:07 - Repairing corrupted file C:\\Windows\\System32\\user32.dll 15:43:43 - Repair complete Which of the following malware types is the MOST likely cause of this output?",
           "back": "Rootkit. A rootkit modifies operating system files to become part of the core OS. The kernel, user, and networking libraries in Windows are core operating system files.",
-          "options": [
-            "Keylogger",
-            "Ransomware",
-            "Logic bomb",
-            "Rootkit"
-          ],
+          "options": ["Keylogger", "Ransomware", "Logic bomb", "Rootkit"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "other-malware-types"
-          ]
+          "tags": ["domain-2", "other-malware-types"]
         },
         {
           "type": "mcq",
           "front": "What type of vulnerability would be associated with this log information? GET http://example.com/show.asp?view=../../Windows/ system.ini HTTP/1.1",
           "back": "Directory traversal. Directory traversal attempts to read or access files outside the scope of the web server's file directory. The pair of dots in a file path (..) refers to the parent directory, so this example is attempt to move back two parent directories before proceeding into the /Windows directory. In a properly configured web server, this traversal should not be possible.",
-          "options": [
-            "Buffer overflow",
-            "Directory traversal",
-            "DoS",
-            "Cross-site scripting"
-          ],
+          "options": ["Buffer overflow", "Directory traversal", "DoS", "Cross-site scripting"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "application-attacks"
-          ]
+          "tags": ["domain-2", "application-attacks"]
         },
         {
           "type": "mcq",
@@ -1637,58 +1006,31 @@
             "Incorrect IP address and subnet mask"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "common-threat-vectors"
-          ]
+          "tags": ["domain-2", "common-threat-vectors"]
         },
         {
           "type": "mcq",
           "front": "An threat actor has gained access to an application through the use of packet captures. Which of the following would be MOST likely used by the threat actor?",
           "back": "Replay. A replay attack uses previously transmitted information to gain access to an application or service. This information is commonly captured in network packets and replayed to the service.",
-          "options": [
-            "Overflow",
-            "Forgery",
-            "Replay",
-            "Injection"
-          ],
+          "options": ["Overflow", "Forgery", "Replay", "Injection"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "replay-attacks"
-          ]
+          "tags": ["domain-2", "replay-attacks"]
         },
         {
           "type": "mcq",
           "front": "A organization is receiving complaints of slowness and disconnections to their Internet-facing web host. A network administrator monitors the Internet link and finds excessive bandwidth utilization from thousands of different IP addresses. Which of the following would be the MOST likely reason for these performance issues?",
           "back": "DDoS. A DDoS (Distributed Denial of Service) is the failure of a service caused by many different remote devices. In this example, the DDoS is related to a bandwidth utilization exhaustion caused by excessive server requests.",
-          "options": [
-            "DNS spoofing",
-            "RFID cloning",
-            "Wireless jamming",
-            "DDoS"
-          ],
+          "options": ["DNS spoofing", "RFID cloning", "Wireless jamming", "DDoS"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "denial-of-service"
-          ]
+          "tags": ["domain-2", "denial-of-service"]
         },
         {
           "type": "mcq",
           "front": "Which of the following malware types would cause a workstation to participate in a DDoS?",
           "back": "Bot. A bot (robot) is malware that installs itself on a system and then waits for instructions. It’s common for botnets to use thousands of bots to perform DDoS (Distributed Denial of Service) attacks.",
-          "options": [
-            "Logic bomb",
-            "Ransomware",
-            "Keylogger",
-            "Bot"
-          ],
+          "options": ["Logic bomb", "Ransomware", "Keylogger", "Bot"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "denial-of-service"
-          ]
+          "tags": ["domain-2", "denial-of-service"]
         },
         {
           "type": "mcq",
@@ -1701,10 +1043,7 @@
             "Disabling unnecessary services"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-2",
-            "mitigation-techniques"
-          ]
+          "tags": ["domain-2", "mitigation-techniques"]
         },
         {
           "type": "mcq",
@@ -1717,10 +1056,7 @@
             "Maintain reliable backup data"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "threat-actors"
-          ]
+          "tags": ["domain-2", "threat-actors"]
         },
         {
           "type": "mcq",
@@ -1733,10 +1069,7 @@
             "Send application logs to the SIEM via syslog"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "hardening-techniques"
-          ]
+          "tags": ["domain-2", "hardening-techniques"]
         },
         {
           "type": "mcq",
@@ -1749,42 +1082,23 @@
             "XSS attachments"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-2",
-            "hardware-vulnerabilities"
-          ]
+          "tags": ["domain-2", "hardware-vulnerabilities"]
         },
         {
           "type": "mcq",
           "front": "An threat actor has circumvented a web-based application to send commands directly to a database. Which of the following would describe this attack type?",
           "back": "SQL injection. A SQL (Structured Query Language) injection takes advantage of poorly written web applications. These web applications do not properly restrict the user input, and the resulting attack bypasses the application and “injects” SQL commands directly into the database itself.",
-          "options": [
-            "On-path",
-            "Downgrade",
-            "SQL injection",
-            "Cross-site scripting"
-          ],
+          "options": ["On-path", "Downgrade", "SQL injection", "Cross-site scripting"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-2",
-            "sql-injection"
-          ]
+          "tags": ["domain-2", "sql-injection"]
         },
         {
           "type": "mcq",
           "front": "A network technician at a bank has noticed a significant decrease in traffic to the bank's public website. After additional investigation, the technician finds that users are being directed to a web site which looks similar to the bank's site but is not under the bank's control. Flushing the local DNS cache and changing the DNS entry does not have any effect. Which of the following has most likely occurred?",
           "back": "Domain hijacking. Domain hijacking will modify the primary DNS (Domain Name System) settings for a domain and allow an attacker to direct users to an IP address controlled by the attacker.",
-          "options": [
-            "DDoS",
-            "Disassociation attack",
-            "Buffer overflow",
-            "Domain hijacking"
-          ],
+          "options": ["DDoS", "Disassociation attack", "Buffer overflow", "Domain hijacking"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-2",
-            "dns-attacks"
-          ]
+          "tags": ["domain-2", "dns-attacks"]
         }
       ]
     },
@@ -1804,11 +1118,7 @@
             "Air-gapped network"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "network-design",
-            "dmz",
-            "domain-3"
-          ]
+          "tags": ["network-design", "dmz", "domain-3"]
         },
         {
           "type": "mcq",
@@ -1821,11 +1131,7 @@
             "Application-layer gateway"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "firewall",
-            "network-security",
-            "domain-3"
-          ]
+          "tags": ["firewall", "network-security", "domain-3"]
         },
         {
           "type": "mcq",
@@ -1838,60 +1144,31 @@
             "Function as a Service (FaaS)"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "cloud",
-            "iaas",
-            "domain-3"
-          ]
+          "tags": ["cloud", "iaas", "domain-3"]
         },
         {
           "type": "mcq",
           "front": "An administrator needs to replace Telnet for encrypted remote server management. Which protocol should they implement?",
           "back": "SSH (Secure Shell). SSH provides encrypted remote terminal access, replacing Telnet which transmits credentials in plaintext. SSH uses public-key or password authentication over an encrypted channel.",
-          "options": [
-            "RDP",
-            "SNMP v2",
-            "SSH",
-            "HTTPS"
-          ],
+          "options": ["RDP", "SNMP v2", "SSH", "HTTPS"],
           "correctOptionIndex": 2,
-          "tags": [
-            "secure-protocols",
-            "domain-3"
-          ]
+          "tags": ["secure-protocols", "domain-3"]
         },
         {
           "type": "mcq",
           "front": "Which technology allows a single physical network switch to be partitioned into multiple isolated logical networks?",
           "back": "VLAN (Virtual Local Area Network). VLANs segment a physical network at Layer 2, creating isolated broadcast domains without requiring separate physical hardware. They are used to separate departments or security zones.",
-          "options": [
-            "NAT",
-            "VLAN",
-            "VPN",
-            "SDN"
-          ],
+          "options": ["NAT", "VLAN", "VPN", "SDN"],
           "correctOptionIndex": 1,
-          "tags": [
-            "network-segmentation",
-            "vlan",
-            "domain-3"
-          ]
+          "tags": ["network-segmentation", "vlan", "domain-3"]
         },
         {
           "type": "mcq",
           "front": "A company connects two geographically separated offices over the public internet with an always-on encrypted tunnel. Which VPN type achieves this?",
           "back": "Site-to-site VPN. Site-to-site VPNs create persistent tunnels between network gateways, connecting entire office networks. Remote access VPNs connect individual users to a network.",
-          "options": [
-            "Remote access VPN",
-            "Split-tunnel VPN",
-            "Site-to-site VPN",
-            "SSL VPN"
-          ],
+          "options": ["Remote access VPN", "Split-tunnel VPN", "Site-to-site VPN", "SSL VPN"],
           "correctOptionIndex": 2,
-          "tags": [
-            "vpn",
-            "domain-3"
-          ]
+          "tags": ["vpn", "domain-3"]
         },
         {
           "type": "mcq",
@@ -1904,11 +1181,7 @@
             "Zero Trust Architecture"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "zero-trust",
-            "cloud",
-            "domain-3"
-          ]
+          "tags": ["zero-trust", "cloud", "domain-3"]
         },
         {
           "type": "mcq",
@@ -1921,11 +1194,7 @@
             "Updating the application software"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "cloud",
-            "shared-responsibility",
-            "domain-3"
-          ]
+          "tags": ["cloud", "shared-responsibility", "domain-3"]
         },
         {
           "type": "mcq",
@@ -1938,26 +1207,15 @@
             "Power usage"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "infrastructure-considerations"
-          ]
+          "tags": ["domain-3", "infrastructure-considerations"]
         },
         {
           "type": "mcq",
           "front": "A organization creates a standard set of government reports each calendar quarter. Which of the following would describe this type of data?",
           "back": "Regulated. Reports and information created for governmental use are regulated by laws regarding the disclosure of certain types of data.",
-          "options": [
-            "Regulated",
-            "Data in use",
-            "Obfuscated",
-            "Trade secrets"
-          ],
+          "options": ["Regulated", "Data in use", "Obfuscated", "Trade secrets"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "data-types-and-classifications"
-          ]
+          "tags": ["domain-3", "data-types-and-classifications"]
         },
         {
           "type": "mcq",
@@ -1970,42 +1228,23 @@
             "Tabletop exercise"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "resiliency"
-          ]
+          "tags": ["domain-3", "resiliency"]
         },
         {
           "type": "mcq",
           "front": "A company would like to minimize database corruption if power is lost to a server. Which of the following would be the BEST strategy to follow?",
           "back": "Journaling. Journaling writes data to a temporary journal before writing the information to the database. If power is lost, the system can recover the last transaction from the journal when power is restored.",
-          "options": [
-            "Replication",
-            "Encryption",
-            "Off-site backups",
-            "Journaling"
-          ],
+          "options": ["Replication", "Encryption", "Off-site backups", "Journaling"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "backups"
-          ]
+          "tags": ["domain-3", "backups"]
         },
         {
           "type": "mcq",
           "front": "A infrastructure administrator would like each user to authenticate with their corporate username and password when connecting to the company's wireless infrastructure. Which of the following should the infrastructure administrator configure on the wireless access points?",
           "back": "802.1X. 802.1X uses a centralized authentication server, and this allows all users to use their corporate credentials during the login process.",
-          "options": [
-            "MFA",
-            "WPA3",
-            "802.1X",
-            "PSK"
-          ],
+          "options": ["MFA", "WPA3", "802.1X", "PSK"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "port-security"
-          ]
+          "tags": ["domain-3", "port-security"]
         },
         {
           "type": "mcq",
@@ -2018,10 +1257,7 @@
             "IoT support"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "cloud-infrastructures"
-          ]
+          "tags": ["domain-3", "cloud-infrastructures"]
         },
         {
           "type": "mcq",
@@ -2034,10 +1270,7 @@
             "Business impact analysis"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "recovery-testing"
-          ]
+          "tags": ["domain-3", "recovery-testing"]
         },
         {
           "type": "mcq",
@@ -2050,58 +1283,31 @@
             "Confirm that the file was not corrupted during the file transfer"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "A company's security policy requires that login access should only be available if a person is physically within the same building as the server. Which of the following would be the BEST way to provide this requirement?",
           "back": "Biometric scanner. A biometric scanner would require a person to be physically present to verify the authentication.",
-          "options": [
-            "PIN",
-            "SMS",
-            "USB security key",
-            "Biometric scanner"
-          ],
+          "options": ["PIN", "SMS", "USB security key", "Biometric scanner"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "A development team has installed a new application and database to a cloud service. After running a vulnerability scanner on the application instance, a security administrator finds the database is available for anyone to query without providing any authentication. Which of these vulnerabilities is MOST associated with this issue?",
           "back": "Open permissions. Just like local systems, proper permissions and security controls are required when applications are installed to a cloud-based system. If permissions are not properly configured, the application data may be accessible by anyone on the Internet.",
-          "options": [
-            "Malicious update",
-            "Legacy software",
-            "Open permissions",
-            "Race condition"
-          ],
+          "options": ["Malicious update", "Legacy software", "Open permissions", "Race condition"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "Which of the following risk management strategies would include the purchase and installation of an NGFW?",
           "back": "Address. Mitigation is a strategy that decreases the threat level. This is commonly done through the use of additional security systems and monitoring, such as an NGFW (Next-Generation Firewall).",
-          "options": [
-            "Address",
-            "Accept",
-            "Avoid",
-            "Transfer"
-          ],
+          "options": ["Address", "Accept", "Avoid", "Transfer"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "firewall-types"
-          ]
+          "tags": ["domain-3", "firewall-types"]
         },
         {
           "type": "mcq",
@@ -2114,26 +1320,15 @@
             "Responsibility matrix"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "cloud-infrastructures"
-          ]
+          "tags": ["domain-3", "cloud-infrastructures"]
         },
         {
           "type": "mcq",
           "front": "An organization needs to provide a remote access solution for a newly implemented cloud-based application. This application is designed to be used by mobile field service technicians. Which of the following would be the best option for this requirement?",
           "back": "SASE. A SASE (Secure Access Service Edge) solution is a next-generation VPN technology designed to optimize the process of secure communication to cloud services.",
-          "options": [
-            "CRL",
-            "Zero-trust",
-            "SASE",
-            "RTOS"
-          ],
+          "options": ["CRL", "Zero-trust", "SASE", "RTOS"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "secure-communication"
-          ]
+          "tags": ["domain-3", "secure-communication"]
         },
         {
           "type": "mcq",
@@ -2146,122 +1341,63 @@
             "Decreased search time"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "data-types-and-classifications"
-          ]
+          "tags": ["domain-3", "data-types-and-classifications"]
         },
         {
           "type": "mcq",
           "front": "A company would like to securely deploy applications without the overhead of installing a virtual machine for each system. Which of the following would be the BEST way to deploy these applications?",
           "back": "Containerization. Application containerization uses a single virtual machine to use as a foundation for separate application \"containers.\" These containers are implemented as isolated instances, and an application in one container is not inherently accessible from other containers on the system.",
-          "options": [
-            "RTOS",
-            "Containerization",
-            "IoT",
-            "Proxy"
-          ],
+          "options": ["RTOS", "Containerization", "IoT", "Proxy"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "other-infrastructure-concepts"
-          ]
+          "tags": ["domain-3", "other-infrastructure-concepts"]
         },
         {
           "type": "mcq",
           "front": "A company is using older operating systems for their web servers and are concerned of their stability during periods of high use. Which of the following should the company use to maximize the uptime and availability of this service?",
           "back": "Load balancer. A load balancer maintains a pool of servers and can distribute the load across those devices. If a device fails, the other servers will continue to operate and provide the necessary services.",
-          "options": [
-            "Cold site",
-            "UPS",
-            "Redundant routers",
-            "Load balancer"
-          ],
+          "options": ["Cold site", "UPS", "Redundant routers", "Load balancer"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "resiliency"
-          ]
+          "tags": ["domain-3", "resiliency"]
         },
         {
           "type": "mcq",
           "front": "A technician at an MSP has been asked to manage devices on third-party private infrastructure. The technician needs command line access to internal routers, switches, and firewalls. Which of the following would provide the necessary access?",
           "back": "Jump server. A jump server is a highly secured device commonly used to access secure areas of another network. The technician would first connect to the jump server using SSH or a VPN tunnel, and then \"jump\" from the jump server to other devices on the inside of the protected network. This would allow technicians at an MSP (Managed Service Provider) to securely access devices on their customer's private networks.",
-          "options": [
-            "Air gap",
-            "HSM",
-            "Jump server",
-            "NAC"
-          ],
+          "options": ["Air gap", "HSM", "Jump server", "NAC"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "network-appliances"
-          ]
+          "tags": ["domain-3", "network-appliances"]
         },
         {
           "type": "mcq",
           "front": "A security engineer is creating a policy to prevent the disclosure of credit card numbers in a customer support application. Users of the application would only be able to view the last four digits of a credit card number. Which of the following would provide this functionality?",
           "back": "Masking. Data masking hides data from being viewed. The full credit card numbers are stored in a database, but only a limited view of this data is available when accessing the information from the application.",
-          "options": [
-            "Tokenization",
-            "Masking",
-            "Salting",
-            "Hashing"
-          ],
+          "options": ["Tokenization", "Masking", "Salting", "Hashing"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "A security engineer has been asked to build a infrastructure link to secure all communication between two remote locations. Which of the following would be the best choice for this task?",
           "back": "IPsec. IPsec (Internet Protocol Security) is commonly used to create a VPN (Virtual Private Network) protected tunnel between devices or locations.",
-          "options": [
-            "Screened subnet",
-            "IPsec",
-            "Infrastructure access control",
-            "SCAP"
-          ],
+          "options": ["Screened subnet", "IPsec", "Infrastructure access control", "SCAP"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "secure-communication"
-          ]
+          "tags": ["domain-3", "secure-communication"]
         },
         {
           "type": "mcq",
           "front": "Which of the following can be used for credit card transactions from a mobile system without sending the actual credit card number across the network?",
           "back": "Tokenization. Tokenization replaces sensitive data with a non-sensitive placeholder. Tokenization is commonly used for NFC (Near-Field Communication) payment systems, and sends a single-use token across the network instead of the actual credit card information.",
-          "options": [
-            "Masking",
-            "Tokenization",
-            "Hashing",
-            "Steganography"
-          ],
+          "options": ["Masking", "Tokenization", "Hashing", "Steganography"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "Which of the following would be the BEST way to protect credit card account information when performing real-time purchase authorizations?",
           "back": "Tokenization. Tokenization is a technique that replaces user data with a non-sensitive placeholder, or token. Tokenization is commonly used on mobile devices during a purchase to use a credit card without transmitting the physical credit card number across the network.",
-          "options": [
-            "NGFW",
-            "Masking",
-            "DLP",
-            "Tokenization"
-          ],
+          "options": ["NGFW", "Masking", "DLP", "Tokenization"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
@@ -2274,90 +1410,47 @@
             "Exfiltration"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "states-of-data"
-          ]
+          "tags": ["domain-3", "states-of-data"]
         },
         {
           "type": "mcq",
           "front": "Which of the following would be the BEST option for application testing in an environment completely separated from the production infrastructure?",
           "back": "Air gap. An air gapped network removes all connectivity between components and ensures there would be no possible communication path between the test network and the production network.",
-          "options": [
-            "Air gap",
-            "Virtualization",
-            "VLANs",
-            "Cloud computing"
-          ],
+          "options": ["Air gap", "Virtualization", "VLANs", "Cloud computing"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "network-infrastructure-concepts"
-          ]
+          "tags": ["domain-3", "network-infrastructure-concepts"]
         },
         {
           "type": "mcq",
           "front": "A security engineer is planning the installation of a new IPS. The network must remain operational if the IPS is turned off or disabled. Which of the following would describe this configuration?",
           "back": "Fail open. An IPS (Intrusion Prevention System) designed to fail open will maintain network connectivity during an outage or failure of the IPS. Even if the IPS was not actively preventing an intrusion, the network would still be up and running.",
-          "options": [
-            "Containerization",
-            "Load balancing",
-            "Fail open",
-            "Tunneling"
-          ],
+          "options": ["Containerization", "Load balancing", "Fail open", "Tunneling"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "intrusion-prevention"
-          ]
+          "tags": ["domain-3", "intrusion-prevention"]
         },
         {
           "type": "mcq",
           "front": "Which of the following describes the process of hiding data from others by embedding the data inside of a different media type?",
           "back": "Obfuscation. Obfuscation is the process of taking something normally understandable and making it very difficult to understand or to be seen. One common obfuscation method used by steganography is to embed a document within an image file.",
-          "options": [
-            "Obfuscation",
-            "Encryption",
-            "Masking",
-            "Hashing"
-          ],
+          "options": ["Obfuscation", "Encryption", "Masking", "Hashing"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "A organization is installing a security appliance to protect the organization's web-based applications from attacks such as SQL injections and unexpected input. Which of the following would BEST describe this appliance?",
           "back": "WAF. A WAF (Web Application Firewall) is designed as a firewall for web-based applications. WAFs are commonly used to protect against application attacks such as injections, cross-site scripting, and invalid input types.",
-          "options": [
-            "SASE",
-            "WAF",
-            "VPN concentrator",
-            "UTM"
-          ],
+          "options": ["SASE", "WAF", "VPN concentrator", "UTM"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "firewall-types"
-          ]
+          "tags": ["domain-3", "firewall-types"]
         },
         {
           "type": "mcq",
           "front": "A company owns a time clock appliance, but the time clock doesn’t provide any access to the operating system and it doesn't provide a method to upgrade the firmware. Which of the following describes this appliance?",
           "back": "Embedded system. An embedded system often does not provide access to the OS and may not provide a method of upgrading the system firmware.",
-          "options": [
-            "SDN",
-            "Embedded system",
-            "End-of-life",
-            "ICS"
-          ],
+          "options": ["SDN", "Embedded system", "End-of-life", "ICS"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "other-infrastructure-concepts"
-          ]
+          "tags": ["domain-3", "other-infrastructure-concepts"]
         },
         {
           "type": "mcq",
@@ -2367,125 +1460,68 @@
             "Uses burned-in cryptographic keys",
             "Stores certificates in a hardware security module",
             "Maintains a copy of the CRL",
-            "Allows the encryption of multiple volumes"
+            "Allows the encryption of multiple volumes",
+            "Includes built-in protections against brute-force attacks"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "encryption-technologies"
-          ]
+          "correctOptionIndices": [0, 4],
+          "tags": ["domain-3", "encryption-technologies"]
         },
         {
           "type": "mcq",
           "front": "Which of the following is the process for replacing sensitive data with a non-sensitive and functional placeholder?",
           "back": "Tokenization. Tokenization replaces sensitive data with a token, and this token can be used as a functional placeholder for the original data. Tokenization is commonly used with credit card processing and mobile devices.",
-          "options": [
-            "Steganography",
-            "Tokenization",
-            "Retention",
-            "Masking"
-          ],
+          "options": ["Steganography", "Tokenization", "Retention", "Masking"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
           "front": "A technology company is manufacturing a military-grade radar tracking device designed to identify any nearby unmanned aerial vehicles (UAVs). The UAV detector must be able to instantly identify and react to a vehicle without delay. Which of the following would BEST describe this tracking device?",
           "back": "RTOS. This tracking system requires an RTOS (Real-Time Operating System) to instantly react to input without any significant delays or queuing in the operating system. Operating systems used by the military, automobile manufacturers, and industrial equipment companies often use RTOS to process certain transactions without any significant delays.",
-          "options": [
-            "RTOS",
-            "IoT",
-            "ICS",
-            "SDN"
-          ],
+          "options": ["RTOS", "IoT", "ICS", "SDN"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "other-infrastructure-concepts"
-          ]
+          "tags": ["domain-3", "other-infrastructure-concepts"]
         },
         {
           "type": "mcq",
           "front": "An incident response team would like to validate their disaster recovery plans without making any changes to the infrastructure. Which of the following would be the best course of action?",
           "back": "Tabletop exercise. A tabletop exercise is a walk-through exercise where the disaster recovery process can be discussed in a conference room without making any changes to the existing systems.",
-          "options": [
-            "Hot site fail-over",
-            "Simulation",
-            "Penetration test",
-            "Tabletop exercise"
-          ],
+          "options": ["Hot site fail-over", "Simulation", "Penetration test", "Tabletop exercise"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "recovery-testing"
-          ]
+          "tags": ["domain-3", "recovery-testing"]
         },
         {
           "type": "mcq",
           "front": "Which of these would be used to provide HA for a web-based database application?",
           "back": "UPS. HA (High Availability) means the service should always be on and available. The only device on this list providing HA is the UPS (Uninterruptible Power Supply). If power is lost, the UPS will provide electricity using battery power or a gas-powered generator.",
-          "options": [
-            "VPN concentrator",
-            "SIEM",
-            "UPS",
-            "DLP"
-          ],
+          "options": ["VPN concentrator", "SIEM", "UPS", "DLP"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "power-resiliency"
-          ]
+          "tags": ["domain-3", "power-resiliency"]
         },
         {
           "type": "mcq",
           "front": "A transportation company maintains a scheduling application and a database in a virtualized cloud-based environment. Which of the following would be the BEST way to backup these services?",
           "back": "Snapshot. Virtual machines (VMs) have a snapshot feature to capture both a full backup of the virtual system and incremental changes that occur over time. It’s common to take a snapshot of a VM for backup purposes or before making any significant changes to the VM. If the changes need to be rolled back, a previous snapshot can be selected and instantly applied to the VM.",
-          "options": [
-            "Snapshot",
-            "RTOS",
-            "Containerization",
-            "Journaling"
-          ],
+          "options": ["Snapshot", "RTOS", "Containerization", "Journaling"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-3",
-            "backups"
-          ]
+          "tags": ["domain-3", "backups"]
         },
         {
           "type": "mcq",
           "front": "A security administrator has installed a network-based DLP solution to determine if file transfers contain PII. Which of the following describes the data during the file transfer?",
           "back": "In-transit. Data in-transit describes information actively moving across the network. As the information passes through switches and routers, it is considered to be in-transit.",
-          "options": [
-            "At-rest",
-            "In-use",
-            "In-transit",
-            "Highly available"
-          ],
+          "options": ["At-rest", "In-use", "In-transit", "Highly available"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-3",
-            "states-of-data"
-          ]
+          "tags": ["domain-3", "states-of-data"]
         },
         {
           "type": "mcq",
           "front": "A developer has created an application to store credential information in a database. Which of the following BEST describes a way of protecting these credentials by adding random data to the credential?",
           "back": "Salting. Passwords are often stored as hashes, but the hashes themselves are often subject to brute force or rainbow table attacks. It’s common to add some additional random data (a salt) to a password before the hashing process. This ensures that each password is truly random when stored, and it makes it more difficult for an attacker to discover all of the stored passwords.",
-          "options": [
-            "Data masking",
-            "Salting",
-            "Asymmetric encryption",
-            "Hashing"
-          ],
+          "options": ["Data masking", "Salting", "Asymmetric encryption", "Hashing"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "protecting-data"
-          ]
+          "tags": ["domain-3", "protecting-data"]
         },
         {
           "type": "mcq",
@@ -2498,26 +1534,15 @@
             "A list of cybersecurity requirements based on the identified risks"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "cloud-infrastructures"
-          ]
+          "tags": ["domain-3", "cloud-infrastructures"]
         },
         {
           "type": "mcq",
           "front": "A company is deploying a series of internal applications to different cloud providers. Which of the following connection types should be deployed for this configuration?",
           "back": "undefined. An SD-WAN (Software Defined Networking in a Wide Area Network) network allows users to efficiently communicate directly to cloud-based applications.",
-          "options": [
-            "Jump server",
-            "Air-gapped",
-            "802.1X",
-            "Site-to-site IPsec VPN"
-          ],
+          "options": ["Jump server", "Air-gapped", "802.1X", "Site-to-site IPsec VPN"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "secure-communication"
-          ]
+          "tags": ["domain-3", "secure-communication"]
         },
         {
           "type": "mcq",
@@ -2530,58 +1555,31 @@
             "Permission restrictions"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "capacity-planning"
-          ]
+          "tags": ["domain-3", "capacity-planning"]
         },
         {
           "type": "mcq",
           "front": "A security engineer would like to monitor all outbound Internet connections for unauthorized software. Which of the following would provide this functionality?",
           "back": "Forward proxy. A proxy server can be used to monitor incoming and outgoing network communication. Proxy servers can be used to identify malicious software, filter content, or increase performance through file caching.",
-          "options": [
-            "IPsec tunnel",
-            "Forward proxy",
-            "Load balancer",
-            "Jump server"
-          ],
+          "options": ["IPsec tunnel", "Forward proxy", "Load balancer", "Jump server"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "network-appliances"
-          ]
+          "tags": ["domain-3", "network-appliances"]
         },
         {
           "type": "mcq",
           "front": "During an initial network connection, a supplicant communicates to an authenticator, which then sends an authentication request to an Active Directory database. Which of the following would BEST describe this authentication technology?",
           "back": "802.1X. IEEE 802.1X is a standard for port-based network access control (NAC). When 802.1X is enabled, devices connecting to the network do not gain access until they provide the correct authentication credentials. This 802.1X standard refers to the client as the supplicant, the switch is commonly configured as the authenticator, and the back-end authentication server is often a centralized user database.",
-          "options": [
-            "PKI",
-            "Federation",
-            "UTM",
-            "802.1X"
-          ],
+          "options": ["PKI", "Federation", "UTM", "802.1X"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-3",
-            "port-security"
-          ]
+          "tags": ["domain-3", "port-security"]
         },
         {
           "type": "mcq",
           "front": "A company runs two separate applications in their data center. The security engineer has been tasked with preventing all communication between these applications. Which of the following would be the BEST way to implement this security requirement?",
           "back": "Air gap. An air gap is a physical separation between networks. Air gapped networks are commonly used to separate networks that must never communicate to each other.",
-          "options": [
-            "SDN",
-            "Air gap",
-            "VLANs",
-            "Firewall"
-          ],
+          "options": ["SDN", "Air gap", "VLANs", "Firewall"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-3",
-            "network-infrastructure-concepts"
-          ]
+          "tags": ["domain-3", "network-infrastructure-concepts"]
         }
       ]
     },
@@ -2594,34 +1592,17 @@
           "type": "mcq",
           "front": "During which phase of the incident response lifecycle does the team stop the spread of an attack, isolate compromised systems, and prevent further damage?",
           "back": "Containment. The incident response phases are: Preparation → Identification → Containment → Eradication → Recovery → Lessons Learned. Containment limits the blast radius before eradication begins.",
-          "options": [
-            "Preparation",
-            "Identification",
-            "Containment",
-            "Eradication"
-          ],
+          "options": ["Preparation", "Identification", "Containment", "Eradication"],
           "correctOptionIndex": 2,
-          "tags": [
-            "incident-response",
-            "domain-4"
-          ]
+          "tags": ["incident-response", "domain-4"]
         },
         {
           "type": "mcq",
           "front": "During a forensic investigation, an analyst must document every person who accessed or handled the seized storage devices. What principle does this fulfill?",
           "back": "Chain of custody. Chain of custody tracks who possessed or accessed evidence at every point. It is essential for ensuring evidence is admissible in court and has not been tampered with.",
-          "options": [
-            "Order of volatility",
-            "Chain of custody",
-            "Legal hold",
-            "Non-repudiation"
-          ],
+          "options": ["Order of volatility", "Chain of custody", "Legal hold", "Non-repudiation"],
           "correctOptionIndex": 1,
-          "tags": [
-            "forensics",
-            "chain-of-custody",
-            "domain-4"
-          ]
+          "tags": ["forensics", "chain-of-custody", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2634,11 +1615,7 @@
             "Data Loss Prevention (DLP)"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "siem",
-            "log-analysis",
-            "domain-4"
-          ]
+          "tags": ["siem", "log-analysis", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2651,10 +1628,7 @@
             "Proxy server"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "ids-ips",
-            "domain-4"
-          ]
+          "tags": ["ids-ips", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2667,11 +1641,7 @@
             "The same access level as their manager"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "least-privilege",
-            "access-control",
-            "domain-4"
-          ]
+          "tags": ["least-privilege", "access-control", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2684,11 +1654,7 @@
             "Notify the software vendor of the vulnerability"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "patch-management",
-            "vulnerability-management",
-            "domain-4"
-          ]
+          "tags": ["patch-management", "vulnerability-management", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2701,11 +1667,7 @@
             "System performance logs"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "log-analysis",
-            "forensics",
-            "domain-4"
-          ]
+          "tags": ["log-analysis", "forensics", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2718,11 +1680,7 @@
             "Data Loss Prevention (DLP)"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "endpoint-security",
-            "edr",
-            "domain-4"
-          ]
+          "tags": ["endpoint-security", "edr", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2735,11 +1693,7 @@
             "Reset the user's password to a complex value"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "iam",
-            "access-control",
-            "domain-4"
-          ]
+          "tags": ["iam", "access-control", "domain-4"]
         },
         {
           "type": "mcq",
@@ -2752,42 +1706,23 @@
             "All weekly incrementals only"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "backup-recovery",
-            "domain-4"
-          ]
+          "tags": ["backup-recovery", "domain-4"]
         },
         {
           "type": "mcq",
           "front": "A organization's email host has obtain an email from a third-party, but the origination host does not match the list of authorized devices. Which of the following would determine the disposition of this message?",
           "back": "DMARC. DMARC (Domain-based Message Authentication Reporting and Conformance) specifies the disposition of spam emails. The legitimate owner of the originating email domain can choose to have these messages accepted, sent to a spam folder, or rejected.",
-          "options": [
-            "NAC",
-            "DMARC",
-            "DKIM",
-            "SPF"
-          ],
+          "options": ["NAC", "DMARC", "DKIM", "SPF"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "email-security"
-          ]
+          "tags": ["domain-4", "email-security"]
         },
         {
           "type": "mcq",
           "front": "A security engineer has inspect a server recently compromised by an threat actor, and has determined the device was exploited due to a known operating device vulnerability. Which of the following would BEST describe this finding?",
           "back": "Root cause analysis. The goal of a root cause analysis is to explain the ultimate cause of an incident. Once the cause is known, it becomes easier to protect against similar attacks in the future.",
-          "options": [
-            "Data subject",
-            "Root cause analysis",
-            "E-discovery",
-            "Risk appetite"
-          ],
+          "options": ["Data subject", "Root cause analysis", "E-discovery", "Risk appetite"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "incident-planning"
-          ]
+          "tags": ["domain-4", "incident-planning"]
         },
         {
           "type": "mcq",
@@ -2800,10 +1735,7 @@
             "Conduct monthly permission auditing"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "access-controls"
-          ]
+          "tags": ["domain-4", "access-controls"]
         },
         {
           "type": "mcq",
@@ -2816,26 +1748,15 @@
             "The victim's IP address is 136.127.92.171"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "log-files"
-          ]
+          "tags": ["domain-4", "log-files"]
         },
         {
           "type": "mcq",
           "front": "Which of the following would be the BEST way to provide a website login using existing credentials from a third-party site?",
           "back": "Federation. Federation would allow members of one organization to authenticate using the credentials of another organization.",
-          "options": [
-            "SSO",
-            "Federation",
-            "802.1X",
-            "EAP"
-          ],
+          "options": ["SSO", "Federation", "802.1X", "EAP"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "identity-and-access-management"
-          ]
+          "tags": ["domain-4", "identity-and-access-management"]
         },
         {
           "type": "mcq",
@@ -2848,42 +1769,23 @@
             "Move the servers to a protected segment"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "vulnerability-remediation"
-          ]
+          "tags": ["domain-4", "vulnerability-remediation"]
         },
         {
           "type": "mcq",
           "front": "A company is creating a security policy for corporate mobile devices: • All mobile devices must be automatically locked after a predefined time period. • The location of each device needs to be traceable. • All of the user’s information should be completely separate from company data. Which of the following would be the BEST way to establish these security policy rules?",
           "back": "MDM. An MDM (Mobile Device Manager) provides a centralized management system for all mobile devices. From this central console, security administrators can set policies for many different types of mobile devices.",
-          "options": [
-            "Segmentation",
-            "Biometrics",
-            "COPE",
-            "MDM"
-          ],
+          "options": ["Segmentation", "Biometrics", "COPE", "MDM"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "securing-wireless-and-mobile"
-          ]
+          "tags": ["domain-4", "securing-wireless-and-mobile"]
         },
         {
           "type": "mcq",
           "front": "A security engineer runs a monthly vulnerability scan. The scan doesn’t list any vulnerabilities for Windows servers, but a significant vulnerability was announced last week and none of the servers are patched yet. Which of the following best describes this result?",
           "back": "False negative. A false negative is a result that fails to detect an issue when one actually exists.",
-          "options": [
-            "Compensating controls",
-            "Zero-day attack",
-            "False negative",
-            "Exploit"
-          ],
+          "options": ["Compensating controls", "Zero-day attack", "False negative", "Exploit"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "analyzing-vulnerabilities"
-          ]
+          "tags": ["domain-4", "analyzing-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -2896,122 +1798,63 @@
             "Guard rails"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "scripting-and-automation"
-          ]
+          "tags": ["domain-4", "scripting-and-automation"]
         },
         {
           "type": "mcq",
           "front": "A user has assigned individual rights and permissions to a file on their network drive. The user adds three additional individuals to have readonly access to the file. Which of the following would describe this access control model?",
           "back": "Discretionary. Discretionary access control is used in many operating systems, and this model allows the owner of the resource to control who has access.",
-          "options": [
-            "Mandatory",
-            "Attribute-based",
-            "Role-based",
-            "Discretionary"
-          ],
+          "options": ["Mandatory", "Attribute-based", "Role-based", "Discretionary"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "access-controls"
-          ]
+          "tags": ["domain-4", "access-controls"]
         },
         {
           "type": "mcq",
           "front": "A security engineer has copied a suspected malware executable from a user's computer and is running the program in a sandbox. Which of the following would describe this part of the incident response process?",
           "back": "Containment. The isolation and containment process prevents malware from spreading and allows the administrator to analyze the operation of the malware without putting any other devices at risk.",
-          "options": [
-            "Eradication",
-            "Preparation",
-            "Recovery",
-            "Containment"
-          ],
+          "options": ["Eradication", "Preparation", "Recovery", "Containment"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
           "front": "A security incident has occurred in a large insurance company. A security engineer is building new servers and security systems to get all of the financial systems back online. Which part of the incident response process would BEST describe these actions?",
           "back": "Recovery. The recovery after a breach can be a phased approach that may take months to complete.",
-          "options": [
-            "Analysis",
-            "Lessons learned",
-            "Containment",
-            "Recovery"
-          ],
+          "options": ["Analysis", "Lessons learned", "Containment", "Recovery"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
           "front": "A security administrator needs to block users from visiting websites hosting malicious software. Which of the following would be the BEST way to control this access?",
           "back": "DNS filtering. DNS filtering uses a database of known malicious websites to resolve an incorrect or null IP address. If a user attempts to visit a known malicious site, the DNS resolution will fail and the user will not be able to visit the website.",
-          "options": [
-            "Data loss prevention",
-            "Honeynet",
-            "Data masking",
-            "DNS filtering"
-          ],
+          "options": ["Data loss prevention", "Honeynet", "Data masking", "DNS filtering"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "web-filtering"
-          ]
+          "tags": ["domain-4", "web-filtering"]
         },
         {
           "type": "mcq",
           "front": "A system engineer has been called to a system with a malware infection. As part of the incident response process, the engineer has imaged the operating system to a known-good version. Which of these incident response steps is the engineer following?",
           "back": "Recovery. The recovery phase describes the process of returning the system and data to the state prior to the malware infection. With a malware infection, this often requires deleting all data and reinstalling a known-good operating system.",
-          "options": [
-            "Lessons learned",
-            "Recovery",
-            "Detection",
-            "Containment"
-          ],
+          "options": ["Lessons learned", "Recovery", "Detection", "Containment"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
           "front": "A company has placed a SCADA device on a segmented infrastructure with limited access from the rest of the corporate infrastructure. Which of the following would describe this process?",
           "back": "Hardening. The hardening process for an industrial SCADA (Supervisory Control and Data Acquisition) system might include network segmentation, additional firewall controls, and the implementation of access control lists.",
-          "options": [
-            "Least privilege",
-            "Data retention",
-            "Hardening",
-            "Load balancing"
-          ],
+          "options": ["Least privilege", "Data retention", "Hardening", "Load balancing"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "hardening-targets"
-          ]
+          "tags": ["domain-4", "hardening-targets"]
         },
         {
           "type": "mcq",
           "front": "An administrator is viewing the following security log: Dec 30 08:40:03 web01 Failed password for root from 10.101.88.230 port 26244 ssh2 Dec 30 08:40:05 web01 Failed password for root from 10.101.88.230 port 26244 ssh2 Dec 30 08:40:09 web01 445 more authentication failures; rhost=10.101.88.230 user=root Which of the following would describe this attack?",
           "back": "Brute force. A brute force attack discovers password by attempting a large combination of letters, numbers, and special characters until a match is found. In this example, the notification of over four hundred attempts would qualify as a brute force attack.",
-          "options": [
-            "Brute force",
-            "DDoS",
-            "Spraying",
-            "Downgrade"
-          ],
+          "options": ["Brute force", "DDoS", "Spraying", "Downgrade"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "log-data"
-          ]
+          "tags": ["domain-4", "log-data"]
         },
         {
           "type": "mcq",
@@ -3024,42 +1867,23 @@
             "A Windows Domain requires a password and smart card"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "multi-factor-authentication"
-          ]
+          "tags": ["domain-4", "multi-factor-authentication"]
         },
         {
           "type": "mcq",
           "front": "A organization is deploying a new application to all employees in the field. Some of the problems associated with this roll out include: • The organization does not have a way to manage the devices in the field • Team members have many different kinds of mobile devices • The same device needs to be used for both corporate and private use Which of the following deployment models would address these concerns?",
           "back": "COPE. A COPE (Corporate-owned, Personally Enabled) device would solve the issue of device standardization and would allow the device to be used for both corporate access and personal use.",
-          "options": [
-            "SSO",
-            "COPE",
-            "BYOD",
-            "CYOD"
-          ],
+          "options": ["SSO", "COPE", "BYOD", "CYOD"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "securing-wireless-and-mobile"
-          ]
+          "tags": ["domain-4", "securing-wireless-and-mobile"]
         },
         {
           "type": "mcq",
           "front": "When decommissioning a device, a company documents the type and size of storage drive, the amount of RAM, and any installed adapter cards. Which of the following describes this process?",
           "back": "Enumeration. Enumeration describes the detailed listing of all parts in a particular device. For a computer, this could include the CPU type, memory, storage drive details, keyboard model, and more.",
-          "options": [
-            "Destruction",
-            "Sanitization",
-            "Certification",
-            "Enumeration"
-          ],
+          "options": ["Destruction", "Sanitization", "Certification", "Enumeration"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "asset-management"
-          ]
+          "tags": ["domain-4", "asset-management"]
         },
         {
           "type": "mcq",
@@ -3072,15 +1896,12 @@
             "Present the results of an internal audit to the board"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "security-tools"
-          ]
+          "tags": ["domain-4", "security-tools"]
         },
         {
           "type": "mcq",
           "front": "A security technician is reviewing this security log from an IPS: ALERT 2023-06-01 13:07:29 [163bcf65118-179b547b] Cross-Site Scripting in JSON Data 222.43.112.74:3332 -> 64.235.145.35:80 URL/index.html - Method POST - Query String \"-\" User Agent: curl/7.21.3 (i386-redhat-linux-gnu) libcurl/7.21.3 NSS/3.13.1.0 zlib/1.2.5 libidn/1.19 libssh2/1.2.7 Detail: token=\"<script>\" key=\"key7\" value=\"<script>alert(2)</script>\" Which of the following can be determined from this log information? (Select TWO)",
-          "back": "The alert was generated from an embedded script. C. The attacker’s IP address is 222.43.112.74 The details of the IPS (Intrusion Prevention System) alert show a script value embedded into JSON ( JavaScript Object Notation) data. The IPS log also shows the flow of the attack with an arrow in the middle. The attacker was IP address 222.43.112.74 with port 3332, and the victim was 64.235.145.35 over port 80.",
+          "back": "The attacker’s IP address is 222.43.112.74. D. The alert was generated from an embedded script. The details of the IPS (Intrusion Prevention System) alert show a script value embedded into JSON (JavaScript Object Notation) data. The IPS log also shows the flow of the attack with an arrow in the middle. The attacker was IP address 222.43.112.74 with port 3332, and the victim was 64.235.145.35 over port 80.",
           "options": [
             "The attacker’s IP address is 222.43.112.74",
             "The attacker’s IP address is 64.235.145.35",
@@ -3088,26 +1909,16 @@
             "The alert was generated from an embedded script"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "log-data"
-          ]
+          "correctOptionIndices": [0, 3],
+          "tags": ["domain-4", "log-data"]
         },
         {
           "type": "mcq",
           "front": "The security policies in a manufacturing company prohibit the transmission of customer information. However, a security engineer has received an alert that credit card numbers were transmitted as an email attachment. Which of the following was the MOST likely source of this alert message?",
           "back": "DLP. DLP (Data Loss Prevention) technologies can identify and block the transmission of sensitive data across the network.",
-          "options": [
-            "IPS",
-            "DLP",
-            "RADIUS",
-            "IPsec"
-          ],
+          "options": ["IPS", "DLP", "RADIUS", "IPsec"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "security-tools"
-          ]
+          "tags": ["domain-4", "security-tools"]
         },
         {
           "type": "mcq",
@@ -3120,26 +1931,15 @@
             "List all servers authorized to send emails"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "email-security"
-          ]
+          "tags": ["domain-4", "email-security"]
         },
         {
           "type": "mcq",
           "front": "A company has just purchased a new application server, and the security director wants to determine if the device is secure. The device is currently installed in a test environment and will not be available to users until the roll out to production next week. Which of the following would be the BEST way to determine if any part of the device can be exploited?",
           "back": "Penetration test. A penetration test can be used to actively exploit potential vulnerabilities in a system or application. This could cause a denial of service or loss of data, so the best practice is to perform the penetration test during nonproduction hours or in a test environment.",
-          "options": [
-            "Tabletop exercise",
-            "Vulnerability scanner",
-            "DDoS",
-            "Penetration test"
-          ],
+          "options": ["Tabletop exercise", "Vulnerability scanner", "DDoS", "Penetration test"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "penetration-testing"
-          ]
+          "tags": ["domain-4", "penetration-testing"]
         },
         {
           "type": "mcq",
@@ -3152,10 +1952,7 @@
             "Active reconnaissance"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "threat-intelligence"
-          ]
+          "tags": ["domain-4", "threat-intelligence"]
         },
         {
           "type": "mcq",
@@ -3168,10 +1965,7 @@
             "Active reconnaissance"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "scripting-and-automation"
-          ]
+          "tags": ["domain-4", "scripting-and-automation"]
         },
         {
           "type": "mcq",
@@ -3184,10 +1978,7 @@
             "Authenticate to a RADIUS server"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "email-security"
-          ]
+          "tags": ["domain-4", "email-security"]
         },
         {
           "type": "mcq",
@@ -3200,26 +1991,15 @@
             "Something you are, somewhere you are"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "multi-factor-authentication"
-          ]
+          "tags": ["domain-4", "multi-factor-authentication"]
         },
         {
           "type": "mcq",
           "front": "A security administrator is configuring the authentication process used by technicians when logging into wireless access points and switches. Instead of using local accounts, the administrator would like to pass all login requests to a centralized database. Which of the following would be the BEST way to deploy this requirement?",
           "back": "AAA. Using AAA (Authentication, Authorization, and Accounting) is a common method of centralizing authentication. Instead of having separate local accounts on different devices, users can authenticate with account information maintained in a centralized database.",
-          "options": [
-            "SIEM",
-            "COPE",
-            "AAA",
-            "IPsec"
-          ],
+          "options": ["SIEM", "COPE", "AAA", "IPsec"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "wireless-security-settings"
-          ]
+          "tags": ["domain-4", "wireless-security-settings"]
         },
         {
           "type": "mcq",
@@ -3232,10 +2012,7 @@
             "Discretionary access control"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "access-controls"
-          ]
+          "tags": ["domain-4", "access-controls"]
         },
         {
           "type": "mcq",
@@ -3248,10 +2025,7 @@
             "Weak encryption"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "secure-protocols"
-          ]
+          "tags": ["domain-4", "secure-protocols"]
         },
         {
           "type": "mcq",
@@ -3264,10 +2038,7 @@
             "Check the IPS logs for any other potential attacks"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
@@ -3280,10 +2051,7 @@
             "Data archiving"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "security-monitoring"
-          ]
+          "tags": ["domain-4", "security-monitoring"]
         },
         {
           "type": "mcq",
@@ -3296,10 +2064,7 @@
             "Risk tolerance"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "analyzing-vulnerabilities"
-          ]
+          "tags": ["domain-4", "analyzing-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -3312,42 +2077,23 @@
             "Something you have"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "multi-factor-authentication"
-          ]
+          "tags": ["domain-4", "multi-factor-authentication"]
         },
         {
           "type": "mcq",
           "front": "A company is installing access points in all of their remote sites. Which of the following would provide confidentiality for all wireless data?",
           "back": "WPA3. WPA3 (Wi-Fi Protected Access 3) is an encryption protocol used on wireless networks. All data sent over a WPA3-protected wireless network will be encrypted.",
-          "options": [
-            "WPA3",
-            "RADIUS",
-            "MDM",
-            "802.1X"
-          ],
+          "options": ["WPA3", "RADIUS", "MDM", "802.1X"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "wireless-security-settings"
-          ]
+          "tags": ["domain-4", "wireless-security-settings"]
         },
         {
           "type": "mcq",
           "front": "A security engineer has detect the installation of ransomware on a database server and has quarantined the system. Which of the following should be followed to ensure that the integrity of the evidence is maintained?",
           "back": "Chain of custody. A chain of custody is a documented record of the evidence. The chain of custody also documents the interactions of every person who comes into contact with the evidence to maintain the integrity.",
-          "options": [
-            "Chain of custody",
-            "Legal hold",
-            "E-discovery",
-            "Non-repudiation"
-          ],
+          "options": ["Chain of custody", "Legal hold", "E-discovery", "Non-repudiation"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "digital-forensics"
-          ]
+          "tags": ["domain-4", "digital-forensics"]
         },
         {
           "type": "mcq",
@@ -3360,58 +2106,31 @@
             "Take screenshots of file directories with file sizes"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "digital-forensics"
-          ]
+          "tags": ["domain-4", "digital-forensics"]
         },
         {
           "type": "mcq",
           "front": "A device administrator is implementing a password policy that would require letters, numbers, and special characters to be included in every password. Which of the following controls MUST be in place to enforce this password policy?",
           "back": "Complexity. Adding different types of characters to a password requires technical controls that increase password complexity.",
-          "options": [
-            "Expiration",
-            "Reuse",
-            "Complexity",
-            "Length"
-          ],
+          "options": ["Expiration", "Reuse", "Complexity", "Length"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "password-security"
-          ]
+          "tags": ["domain-4", "password-security"]
         },
         {
           "type": "mcq",
           "front": "A device administrator believes that certain configuration files on a Linux server have been modified from their original state. The administrator has reverted the configurations to their original state, but he would like to be notified if they are changed again. Which of the following would be the BEST way to provide this functionality?",
           "back": "File integrity monitoring. File integrity monitoring software (i.e., Tripwire, System File Checker, etc.) can be used to alert if the contents of a file are modified.",
-          "options": [
-            "HIPS",
-            "File integrity monitoring",
-            "Application permit list",
-            "WAF"
-          ],
+          "options": ["HIPS", "File integrity monitoring", "Application permit list", "WAF"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "monitoring-data"
-          ]
+          "tags": ["domain-4", "monitoring-data"]
         },
         {
           "type": "mcq",
           "front": "A security administrator is updating the network network to support 802.1X. Which of the following would be the BEST choice for this configuration?",
           "back": "LDAP. 802.1X is a standard for authentication, and LDAP (Lightweight Directory Access Protocol) is a common protocol used for centralized authentication. Other protocols such as RADIUS, TACACS+, or Kerberos would also be options for 802.1X authentication.",
-          "options": [
-            "SIEM",
-            "SNMP traps",
-            "SPF",
-            "LDAP"
-          ],
+          "options": ["SIEM", "SNMP traps", "SPF", "LDAP"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "identity-and-access-management"
-          ]
+          "tags": ["domain-4", "identity-and-access-management"]
         },
         {
           "type": "mcq",
@@ -3424,10 +2143,7 @@
             "Users are required to use at least two factors of authentication"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "asset-management"
-          ]
+          "tags": ["domain-4", "asset-management"]
         },
         {
           "type": "mcq",
@@ -3440,26 +2156,15 @@
             "A list of missing software patches"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "vulnerability-scanning"
-          ]
+          "tags": ["domain-4", "vulnerability-scanning"]
         },
         {
           "type": "mcq",
           "front": "A company has detect a compromised server, and the security team would like to know if an attacker has used this system to move between systems. Which of the following would be the BEST way to provide this information?",
           "back": "NetFlow logs. NetFlow information can provide a summary of network traffic, application usage, and details of network conversations. The NetFlow logs will show all conversations from this device to any others in the network.",
-          "options": [
-            "DNS server logs",
-            "Penetration test",
-            "NetFlow logs",
-            "Email metadata"
-          ],
+          "options": ["DNS server logs", "Penetration test", "NetFlow logs", "Email metadata"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "security-tools"
-          ]
+          "tags": ["domain-4", "security-tools"]
         },
         {
           "type": "mcq",
@@ -3472,42 +2177,23 @@
             "Scan outgoing traffic with DLP"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "monitoring-data"
-          ]
+          "tags": ["domain-4", "monitoring-data"]
         },
         {
           "type": "mcq",
           "front": "An organization has detect a security breach and has removed the affected servers from the network. Which of the following is the NEXT step in the incident response process?",
           "back": "Eradication. The incident response process is preparation, detection, analysis, containment, eradication, recovery, and lessons learned. Once a system has been contained, any malware or breached user accounts should be removed from the system.",
-          "options": [
-            "Detection",
-            "Eradication",
-            "Preparation",
-            "Recovery"
-          ],
+          "options": ["Detection", "Eradication", "Preparation", "Recovery"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
           "front": "A security engineer is using an access control where each file or folder is assigned a security clearance level, such as “confidential” or “secret.” The security engineer then assigns a maximum security level to each user. What type of access control is used in this network?",
           "back": "Mandatory. Mandatory access control uses a series of security levels (i.e., public, private, secret) and assigns those levels to each object in the operating system. Users are assigned a security level, and they would only have access to objects that meet or are below that assigned security level.",
-          "options": [
-            "Discretionary",
-            "Role-based",
-            "Mandatory",
-            "Rule-based"
-          ],
+          "options": ["Discretionary", "Role-based", "Mandatory", "Rule-based"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "access-controls"
-          ]
+          "tags": ["domain-4", "access-controls"]
         },
         {
           "type": "mcq",
@@ -3520,10 +2206,7 @@
             "Retention policies"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "incident-response-planning"
-          ]
+          "tags": ["domain-4", "incident-response-planning"]
         },
         {
           "type": "mcq",
@@ -3536,10 +2219,7 @@
             "Operating device version"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "log-data"
-          ]
+          "tags": ["domain-4", "log-data"]
         },
         {
           "type": "mcq",
@@ -3552,10 +2232,7 @@
             "Allow users to download tax records from their account login"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "asset-management"
-          ]
+          "tags": ["domain-4", "asset-management"]
         },
         {
           "type": "mcq",
@@ -3568,10 +2245,7 @@
             "Disable the IPS signature"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "security-monitoring"
-          ]
+          "tags": ["domain-4", "security-monitoring"]
         },
         {
           "type": "mcq",
@@ -3584,10 +2258,7 @@
             "Confirm the application's digital signature"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "application-security"
-          ]
+          "tags": ["domain-4", "application-security"]
         },
         {
           "type": "mcq",
@@ -3600,10 +2271,7 @@
             "Security key"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "multi-factor-authentication"
-          ]
+          "tags": ["domain-4", "multi-factor-authentication"]
         },
         {
           "type": "mcq",
@@ -3616,10 +2284,7 @@
             "Quarantine the server and scan for malware"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "analyzing-vulnerabilities"
-          ]
+          "tags": ["domain-4", "analyzing-vulnerabilities"]
         },
         {
           "type": "mcq",
@@ -3632,58 +2297,31 @@
             "USB-connected storage drive with FDE"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "multi-factor-authentication"
-          ]
+          "tags": ["domain-4", "multi-factor-authentication"]
         },
         {
           "type": "mcq",
           "front": "An administrator is writing a script to convert an email message to a help desk ticket and assign the ticket to the correct department. Which of the following should be administrator use to complete this script?",
           "back": "Orchestration. Orchestration describes the process of automation, and is commonly associated with large scale automation or automating processes between different systems.",
-          "options": [
-            "Federation",
-            "Due diligence",
-            "Orchestration",
-            "Role-based access controls"
-          ],
+          "options": ["Federation", "Due diligence", "Orchestration", "Role-based access controls"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "scripting-and-automation"
-          ]
+          "tags": ["domain-4", "scripting-and-automation"]
         },
         {
           "type": "mcq",
           "front": "A security engineer would like a report showing how many attackers are attempting to use a known vulnerability to gain access to a corporate web server. Which of the following should be used to gather this information?",
           "back": "IPS log. An IPS (Intrusion Prevention System) commonly uses a database of known vulnerabilities to identify and block malicious network traffic. This log of attempted exploits would provide the required report information.",
-          "options": [
-            "IPS log",
-            "Windows log",
-            "Application log",
-            "Metadata"
-          ],
+          "options": ["IPS log", "Windows log", "Application log", "Metadata"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "log-data"
-          ]
+          "tags": ["domain-4", "log-data"]
         },
         {
           "type": "mcq",
           "front": "During a ransomware outbreak, an company was forced to rebuild database servers from known good backup systems. In which of the following incident response phases were these database servers brought back online?",
           "back": "Recovery. The recovery phase focuses on getting things back to normal after an attack. This is the phase that removes malware, fixes vulnerabilities, and recovers the damaged systems.",
-          "options": [
-            "Detection",
-            "Recovery",
-            "Lessons learned",
-            "Containment"
-          ],
+          "options": ["Detection", "Recovery", "Lessons learned", "Containment"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
@@ -3696,42 +2334,23 @@
             "Build a separate VLAN for the application"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "firewalls"
-          ]
+          "tags": ["domain-4", "firewalls"]
         },
         {
           "type": "mcq",
           "front": "A infrastructure administrator is viewing a log file from a web server: app/invokefunction&function=call_user_func_ array&vars[0]=md5&vars[1][0]=__HelloThinkPHP Which of the following would be the BEST way to prevent this attack?",
           "back": "Input validation. In this example, the attacker is attempting to use a remote code execution exploit. Input validation can be used to create a very specific filter of allowed input, and a strict validation process would have prevented the web server from processing this attack information.",
-          "options": [
-            "Input validation",
-            "Permit list",
-            "Secure cookies",
-            "Static code analyzer"
-          ],
+          "options": ["Input validation", "Permit list", "Secure cookies", "Static code analyzer"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "application-security"
-          ]
+          "tags": ["domain-4", "application-security"]
         },
         {
           "type": "mcq",
           "front": "A cybersecurity analyst has been asked to respond to a denial of service attack against a web server, and the analyst has collected the log files and data from the server. Which of the following would permit a future analyst to verify the data as original and unaltered?",
           "back": "Data hashing. Data hashing creates a unique message digest based on stored data. If the data is tampered with, a hash taken after the change will differ from the original value. This allows the forensic engineer to identify if information has been changed. .",
-          "options": [
-            "E-discovery",
-            "Root cause analysis",
-            "Legal hold",
-            "Data hashing"
-          ],
+          "options": ["E-discovery", "Root cause analysis", "Legal hold", "Data hashing"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "digital-forensics"
-          ]
+          "tags": ["domain-4", "digital-forensics"]
         },
         {
           "type": "mcq",
@@ -3744,42 +2363,23 @@
             "Block port tcp/443 on the firewall"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-4",
-            "web-filtering"
-          ]
+          "tags": ["domain-4", "web-filtering"]
         },
         {
           "type": "mcq",
           "front": "In an environment using discretionary access controls, which of these would control the rights and permissions associated with a file or directory?",
           "back": "Owner. The owner of an object controls access in a discretionary access control model. The object and type of access is at the discretion of the owner, and they can determine who can access the file and the type of access they would have.",
-          "options": [
-            "Group",
-            "Device",
-            "Administrator",
-            "Owner"
-          ],
+          "options": ["Group", "Device", "Administrator", "Owner"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "access-controls"
-          ]
+          "tags": ["domain-4", "access-controls"]
         },
         {
           "type": "mcq",
           "front": "A company is implementing a public file-storage and cloud-based sharing service, and would like users to authenticate with an existing account on a trusted third-party web site. Which of the following should the company implement?",
           "back": "Federation. Federation provides authentication and authorization between two entities using a separate trusted authentication platform. For example, a web site could allow authentication using an existing account on a third-party social media site.",
-          "options": [
-            "Least privilege",
-            "Discretionary access controls",
-            "SSO",
-            "Federation"
-          ],
+          "options": ["Least privilege", "Discretionary access controls", "SSO", "Federation"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "identity-and-access-management"
-          ]
+          "tags": ["domain-4", "identity-and-access-management"]
         },
         {
           "type": "mcq",
@@ -3792,74 +2392,46 @@
             "Continuity of operations"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "scripting-and-automation"
-          ]
+          "tags": ["domain-4", "scripting-and-automation"]
         },
         {
           "type": "mcq",
           "front": "A security engineer is implementing an authentication system for the company. Which of the following would be the best choice for validating login credentials for all usernames and passwords in the authentication system?",
           "back": "LDAP. LDAP (Lightweight Directory Access Protocol) is a common standard for authentication. LDAP is an open standard and is available across many different operating systems and devices.",
-          "options": [
-            "CA",
-            "SIEM",
-            "LDAP",
-            "WAF"
-          ],
+          "options": ["CA", "SIEM", "LDAP", "WAF"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "identity-and-access-management"
-          ]
+          "tags": ["domain-4", "identity-and-access-management"]
         },
         {
           "type": "mcq",
           "front": "A technician is reviewing this information from an IPS log: MAIN_IPS: 22June2023 09:02:50 reject 10.1.111.7 Alert: HTTP Suspicious Webdav OPTIONS Method Request; Host: Server Severity: medium; Performance Impact:3; Category: info-leak; Packet capture; disable Proto:tcp; dst:192.168.11.1; src:10.1.111.7 Which of the following can be associated with this log information? (Select TWO)",
-          "back": "The source of the attack is 10.1.111.7. E. The attacker sent an unusual HTTP packet to trigger the IPS The second line of the IPS log shows the type of alert, and this record indicates a suspicious HTTP packet was sent. The last line of the IPS log shows the protocol, destination, and source IP address information. The source IP address is 10.1.111.7.",
+          "back": "The source of the attack is 10.1.111.7. E. The attacker sent an unusual HTTP packet to trigger the IPS. The second line of the IPS log shows the type of alert, and this record indicates a suspicious HTTP packet was sent. The last line of the IPS log shows the protocol, destination, and source IP address information. The source IP address is 10.1.111.7.",
           "options": [
             "The source of the attack is 192.168.11.1",
             "The event was logged but no packets were dropped",
             "The source of the attack is 10.1.111.7",
-            "The threat actor sent a non-authenticated BGP packet to trigger the IPS"
+            "The threat actor sent a non-authenticated BGP packet to trigger the IPS",
+            "The attacker sent an unusual HTTP packet to trigger the IPS"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-4",
-            "log-data"
-          ]
+          "correctOptionIndices": [2, 4],
+          "tags": ["domain-4", "log-data"]
         },
         {
           "type": "mcq",
           "front": "Which of these are used to force the preservation of data for later use in court?",
           "back": "Legal hold. A legal hold is a legal technique to preserve relevant information. This process will ensure the data remains accessible for any legal preparation prior to litigation.",
-          "options": [
-            "Legal hold",
-            "E-discovery",
-            "Chain of custody",
-            "Data loss prevention"
-          ],
+          "options": ["Legal hold", "E-discovery", "Chain of custody", "Data loss prevention"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "digital-forensics"
-          ]
+          "tags": ["domain-4", "digital-forensics"]
         },
         {
           "type": "mcq",
           "front": "A systems engineer has identified an unexpected username on a database host, and the user has been transferring database files to an external host over the organization’s Internet connection. The administrator then performed these tasks: • Physically disconnected the Ethernet cable on the database host • Disabled the unknown account • Configured a firewall rule to stops file transfers from the host Which of the following would BEST describe this part of the incident response process?",
           "back": "Containment. The containment phase isolates events which can quickly spread and get out of hand. A file transfer from a database server can quickly be contained by disabling any ability to continue the file transfer.",
-          "options": [
-            "Containment",
-            "Lessons learned",
-            "Preparation",
-            "Eradication"
-          ],
+          "options": ["Containment", "Lessons learned", "Preparation", "Eradication"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-4",
-            "incident-response"
-          ]
+          "tags": ["domain-4", "incident-response"]
         },
         {
           "type": "mcq",
@@ -3872,42 +2444,23 @@
             "Enable WPA3 encryption"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "wireless-security-settings"
-          ]
+          "tags": ["domain-4", "wireless-security-settings"]
         },
         {
           "type": "mcq",
           "front": "A organization's employees are required to authenticate each time a file share, printer, or SAN imaging system is accessed. Which of the following should be used to minimize the number of employee authentication requests?",
           "back": "SSO. SSO (Single Sign-On) accepts valid authentication requests and allows users to access multiple resources without requiring additional user authentications.",
-          "options": [
-            "OSINT",
-            "MFA",
-            "SCAP",
-            "SSO"
-          ],
+          "options": ["OSINT", "MFA", "SCAP", "SSO"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "identity-and-access-management"
-          ]
+          "tags": ["domain-4", "identity-and-access-management"]
         },
         {
           "type": "mcq",
           "front": "Which of the following deployment models would a organization follow if they require individuals to use their personal phones for work purposes?",
           "back": "BYOD. BYOD (Bring Your Own Device) is a model where the employee owns the mobile device but can also use the same device for work.",
-          "options": [
-            "COPE",
-            "CYOD",
-            "MDM",
-            "BYOD"
-          ],
+          "options": ["COPE", "CYOD", "MDM", "BYOD"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-4",
-            "securing-wireless-and-mobile"
-          ]
+          "tags": ["domain-4", "securing-wireless-and-mobile"]
         }
       ]
     },
@@ -3920,51 +2473,25 @@
           "type": "mcq",
           "front": "An asset is valued at $500,000. A threat has a 40% exposure factor and an annualized rate of occurrence of 2. What is the Annualized Loss Expectancy (ALE)?",
           "back": "ALE = SLE × ARO. SLE = $500,000 × 0.40 = $200,000. ALE = $200,000 × 2 = $400,000. ALE quantifies expected yearly loss and helps justify security control investments.",
-          "options": [
-            "$100,000",
-            "$200,000",
-            "$400,000",
-            "$500,000"
-          ],
+          "options": ["$100,000", "$200,000", "$400,000", "$500,000"],
           "correctOptionIndex": 2,
-          "tags": [
-            "risk-management",
-            "quantitative-risk",
-            "domain-5"
-          ]
+          "tags": ["risk-management", "quantitative-risk", "domain-5"]
         },
         {
           "type": "mcq",
           "front": "An organization stops processing credit card payments entirely to avoid PCI DSS compliance obligations. Which risk treatment strategy is this?",
           "back": "Risk avoidance. Risk avoidance eliminates the activity that creates the risk. Risk mitigation reduces the impact or likelihood; risk transference shifts the risk (e.g., insurance); risk acceptance accepts the risk.",
-          "options": [
-            "Risk mitigation",
-            "Risk transference",
-            "Risk acceptance",
-            "Risk avoidance"
-          ],
+          "options": ["Risk mitigation", "Risk transference", "Risk acceptance", "Risk avoidance"],
           "correctOptionIndex": 3,
-          "tags": [
-            "risk-management",
-            "domain-5"
-          ]
+          "tags": ["risk-management", "domain-5"]
         },
         {
           "type": "mcq",
           "front": "Which compliance framework governs the security of payment card data and applies to any organization that stores, processes, or transmits cardholder data?",
           "back": "PCI DSS (Payment Card Industry Data Security Standard). PCI DSS is maintained by the card brands and applies to all merchants and processors handling cardholder data regardless of size or transaction volume.",
-          "options": [
-            "HIPAA",
-            "GDPR",
-            "PCI DSS",
-            "SOX"
-          ],
+          "options": ["HIPAA", "GDPR", "PCI DSS", "SOX"],
           "correctOptionIndex": 2,
-          "tags": [
-            "compliance",
-            "pci-dss",
-            "domain-5"
-          ]
+          "tags": ["compliance", "pci-dss", "domain-5"]
         },
         {
           "type": "mcq",
@@ -3977,11 +2504,7 @@
             "Vulnerability assessment"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "bcp",
-            "bia",
-            "domain-5"
-          ]
+          "tags": ["bcp", "bia", "domain-5"]
         },
         {
           "type": "mcq",
@@ -3994,10 +2517,7 @@
             "Data minimization"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "data-classification",
-            "domain-5"
-          ]
+          "tags": ["data-classification", "domain-5"]
         },
         {
           "type": "mcq",
@@ -4010,11 +2530,7 @@
             "Audit the vendor's physical offices"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "vendor-risk",
-            "third-party",
-            "domain-5"
-          ]
+          "tags": ["vendor-risk", "third-party", "domain-5"]
         },
         {
           "type": "mcq",
@@ -4027,11 +2543,7 @@
             "Blocking all external email attachments"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "security-awareness",
-            "phishing",
-            "domain-5"
-          ]
+          "tags": ["security-awareness", "phishing", "domain-5"]
         },
         {
           "type": "mcq",
@@ -4044,11 +2556,7 @@
             "Statement of work (SOW)"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "penetration-testing",
-            "governance",
-            "domain-5"
-          ]
+          "tags": ["penetration-testing", "governance", "domain-5"]
         },
         {
           "type": "mcq",
@@ -4061,10 +2569,7 @@
             "Regulatory audit"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "penetration-tests"
-          ]
+          "tags": ["domain-5", "penetration-tests"]
         },
         {
           "type": "mcq",
@@ -4077,42 +2582,23 @@
             "Maintenance window"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "compliance"
-          ]
+          "tags": ["domain-5", "compliance"]
         },
         {
           "type": "mcq",
           "front": "A device administrator is working on a contract that will specify a minimum required uptime for a set of Internet-facing firewalls. The administrator needs to know how often the firewall hardware is expected to fail between repairs. Which of the following would BEST describe this information?",
           "back": "MTBF. The MTBF (Mean Time Between Failures) is a prediction of how often a repairable system will fail.",
-          "options": [
-            "MTBF",
-            "RTO",
-            "MTTR",
-            "RPO"
-          ],
+          "options": ["MTBF", "RTO", "MTTR", "RPO"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "business-impact-analysis"
-          ]
+          "tags": ["domain-5", "business-impact-analysis"]
         },
         {
           "type": "mcq",
           "front": "Two companies have been working together for a number of months, and they would now like to qualify their partnership with a broad formal agreement between both organizations. Which of the following would describe this agreement?",
           "back": "MOA. An MOA (Memorandum of Agreement) is a formal document where both sides agree to a broad set of goals and objectives associated with the partnership.",
-          "options": [
-            "MOA",
-            "NDA",
-            "SLA",
-            "SOW"
-          ],
+          "options": ["MOA", "NDA", "SLA", "SOW"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "agreement-types"
-          ]
+          "tags": ["domain-5", "agreement-types"]
         },
         {
           "type": "mcq",
@@ -4125,10 +2611,7 @@
             "Incident response"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "security-policies"
-          ]
+          "tags": ["domain-5", "security-policies"]
         },
         {
           "type": "mcq",
@@ -4141,26 +2624,15 @@
             "Validate the offboarding processes and procedures"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-5",
-            "security-procedures"
-          ]
+          "tags": ["domain-5", "security-procedures"]
         },
         {
           "type": "mcq",
           "front": "Which of the following is used to describe how cautious an company might be to taking a specific risk?",
           "back": "Risk appetite. A risk appetite is a broad description of how much risk-taking is deemed acceptable. An organization's risk appetite posture might be conservative, or they might be more expansionary and willing to take additional risks.",
-          "options": [
-            "Risk appetite",
-            "Risk register",
-            "Risk transfer",
-            "Risk reporting"
-          ],
+          "options": ["Risk appetite", "Risk register", "Risk transfer", "Risk reporting"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "risk-analysis"
-          ]
+          "tags": ["domain-5", "risk-analysis"]
         },
         {
           "type": "mcq",
@@ -4173,10 +2645,7 @@
             "Phishing campaign"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-5",
-            "security-awareness"
-          ]
+          "tags": ["domain-5", "security-awareness"]
         },
         {
           "type": "mcq",
@@ -4189,42 +2658,23 @@
             "An itemized statement of work"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "security-awareness"
-          ]
+          "tags": ["domain-5", "security-awareness"]
         },
         {
           "type": "mcq",
           "front": "An organization maintains a large database of customer information for sales tracking and customer support. Which person in the organization would be responsible for managing the access rights to this data?",
           "back": "Data custodian. The data custodian manages access rights and sets security controls to the data.",
-          "options": [
-            "Data custodian",
-            "Data processor",
-            "Data owner",
-            "Data subject"
-          ],
+          "options": ["Data custodian", "Data processor", "Data owner", "Data subject"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "data-roles-and-responsibilities"
-          ]
+          "tags": ["domain-5", "data-roles-and-responsibilities"]
         },
         {
           "type": "mcq",
           "front": "Which of the following describes a monetary loss if one event occurs?",
           "back": "SLE. SLE (Single Loss Expectancy) describes the financial impact of a single event.",
-          "options": [
-            "ARO",
-            "ALE",
-            "SLE",
-            "RTO"
-          ],
+          "options": ["ARO", "ALE", "SLE", "RTO"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "risk-analysis"
-          ]
+          "tags": ["domain-5", "risk-analysis"]
         },
         {
           "type": "mcq",
@@ -4237,26 +2687,15 @@
             "Password vaulting"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "compliance"
-          ]
+          "tags": ["domain-5", "compliance"]
         },
         {
           "type": "mcq",
           "front": "The Vice President of Sales has asked the IT team to create daily backups of the sales data. The Vice President is an example of a:",
           "back": "Data owner. The data owner is accountable for specific data, so this person is often a senior officer of the organization.",
-          "options": [
-            "Data processor",
-            "Data owner",
-            "Data controller",
-            "Data steward"
-          ],
+          "options": ["Data processor", "Data owner", "Data controller", "Data steward"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "data-roles-and-responsibilities"
-          ]
+          "tags": ["domain-5", "data-roles-and-responsibilities"]
         },
         {
           "type": "mcq",
@@ -4269,58 +2708,31 @@
             "Known environment"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "penetration-tests"
-          ]
+          "tags": ["domain-5", "penetration-tests"]
         },
         {
           "type": "mcq",
           "front": "A transportation organization is installing new wireless access points in their corporate office. The manufacturer estimates the access points will operate an average of 100,000 hours before a hardware-related outage. Which of the following describes this estimate?",
           "back": "MTBF. The MTBF (Mean Time Between Failures) is the average time expected between outages. This is usually an estimation based on the internal device components and their expected operational lifetime.",
-          "options": [
-            "MTTR",
-            "RPO",
-            "RTO",
-            "MTBF"
-          ],
+          "options": ["MTTR", "RPO", "RTO", "MTBF"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-5",
-            "business-impact-analysis"
-          ]
+          "tags": ["domain-5", "business-impact-analysis"]
         },
         {
           "type": "mcq",
           "front": "Before deploying a new application, a organization is performing an internal audit to guarantee all of their servers are configured with the appropriate security features. Which of the following would BEST describe this process?",
           "back": "Due care. Due care describes a duty to act honestly and in good faith. Due diligence is often associated with third-party activities, and due care tends to refer to internal activities.",
-          "options": [
-            "Data retention",
-            "Statement of work",
-            "Due care",
-            "Active reconnaissance"
-          ],
+          "options": ["Data retention", "Statement of work", "Due care", "Active reconnaissance"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "compliance"
-          ]
+          "tags": ["domain-5", "compliance"]
         },
         {
           "type": "mcq",
           "front": "An organization has previously purchased insurance to cover a ransomware attack, but the costs of maintaining the policy have increased above the acceptable budget. The company has now decided to cancel the insurance policies and address potential ransomware issues internally. Which of the following would best describe this action?",
           "back": "Acceptance. Risk acceptance is a business decision that places the responsibility of the risky activity on the organization itself.",
-          "options": [
-            "Risk-avoidance",
-            "Mitigation",
-            "Acceptance",
-            "Transference"
-          ],
+          "options": ["Risk-avoidance", "Mitigation", "Acceptance", "Transference"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "risk-management-strategies"
-          ]
+          "tags": ["domain-5", "risk-management-strategies"]
         },
         {
           "type": "mcq",
@@ -4333,10 +2745,7 @@
             "Internal audit"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "user-training"
-          ]
+          "tags": ["domain-5", "user-training"]
         },
         {
           "type": "mcq",
@@ -4349,10 +2758,7 @@
             "Vendor monitoring"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "audits-and-assessments"
-          ]
+          "tags": ["domain-5", "audits-and-assessments"]
         },
         {
           "type": "mcq",
@@ -4365,10 +2771,7 @@
             "Connect a UPS to all servers"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "compliance"
-          ]
+          "tags": ["domain-5", "compliance"]
         },
         {
           "type": "mcq",
@@ -4381,10 +2784,7 @@
             "Conflict of interest"
           ],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-5",
-            "third-party-risk-assessment"
-          ]
+          "tags": ["domain-5", "third-party-risk-assessment"]
         },
         {
           "type": "mcq",
@@ -4397,26 +2797,15 @@
             "The customer will connect to remote sites over an IPsec tunnel"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "agreement-types"
-          ]
+          "tags": ["domain-5", "agreement-types"]
         },
         {
           "type": "mcq",
           "front": "A security engineer has been tasked with storing and protecting customer payment and shipping information for a three-year period. Which of the following would describe the source of this data?",
           "back": "Data subject. In data privacy, the data subject describes an individual with personal data. Payment details and shipping addresses describe personal information from a data subject.",
-          "options": [
-            "Controller",
-            "Owner",
-            "Data subject",
-            "Processor"
-          ],
+          "options": ["Controller", "Owner", "Data subject", "Processor"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "privacy"
-          ]
+          "tags": ["domain-5", "privacy"]
         },
         {
           "type": "mcq",
@@ -4429,74 +2818,39 @@
             "Defensive"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "penetration-tests"
-          ]
+          "tags": ["domain-5", "penetration-tests"]
         },
         {
           "type": "mcq",
           "front": "Which of the following would be the best way to describe the estimated number of laptops that might be stolen in a fiscal year?",
           "back": "ARO. The ARO (Annualized Rate of Occurrence) describes the number of instances estimated to occur in a year. For example, if the organization expect to lose seven laptops to theft in a year, the ARO for laptop theft is seven.",
-          "options": [
-            "ARO",
-            "MTTR",
-            "ALE",
-            "SLE"
-          ],
+          "options": ["ARO", "MTTR", "ALE", "SLE"],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "risk-analysis"
-          ]
+          "tags": ["domain-5", "risk-analysis"]
         },
         {
           "type": "mcq",
           "front": "The IT department of a transportation organization maintains an on-site inventory of chassis-based network switch interface cards. If a failure occurs, the on-site technician can replace the interface card and have the system running again in sixty minutes. Which of the following BEST describes this recovery metric?",
           "back": "MTTR. MTTR (Mean Time To Restore) is the amount of time required to get back up and running. This is sometimes called Mean Time To Repair.",
-          "options": [
-            "MTBF",
-            "MTTR",
-            "RPO",
-            "RTO"
-          ],
+          "options": ["MTBF", "MTTR", "RPO", "RTO"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "business-impact-analysis"
-          ]
+          "tags": ["domain-5", "business-impact-analysis"]
         },
         {
           "type": "mcq",
           "front": "A company's human resources team maintains a list of all employees participating in the corporate savings plan. A third-party financial company uses this information to manage stock investments for the employees. Which of the following would describe this financial company?",
           "back": "Processor. A data processor performs some type of action to the data, and this is often a different group within the organization or a third-party company. In this example, the third-party financial organization is the data processor of the employee's financial data.",
-          "options": [
-            "Custodian",
-            "Processor",
-            "Owner",
-            "Controller"
-          ],
+          "options": ["Custodian", "Processor", "Owner", "Controller"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "data-roles-and-responsibilities"
-          ]
+          "tags": ["domain-5", "data-roles-and-responsibilities"]
         },
         {
           "type": "mcq",
           "front": "Each year, a certain number of laptops are lost or stolen and must be replaced by the company. Which of the following would describe the total cost the company spends each year on laptop replacements?",
           "back": "ALE. The ALE (Annual Loss Expectancy) is the total amount of the financial loss over an entire year.",
-          "options": [
-            "SLE",
-            "SLA",
-            "ALE",
-            "ARO"
-          ],
+          "options": ["SLE", "SLA", "ALE", "ARO"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "risk-analysis"
-          ]
+          "tags": ["domain-5", "risk-analysis"]
         },
         {
           "type": "mcq",
@@ -4509,26 +2863,15 @@
             "Document the user’s outstanding tasks"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "security-procedures"
-          ]
+          "tags": ["domain-5", "security-procedures"]
         },
         {
           "type": "mcq",
           "front": "A organization is implementing a series of steps to follow when responding to a security event. Which of the following would provide this set of processes and procedures?",
           "back": "Playbook. A playbook provides a conditional set of steps to follow when addressing a specific event. An organization might have separate playbooks for investigating a data breach, responding to a virus infection, or recovering from a ransomware attack.",
-          "options": [
-            "MDM",
-            "DLP",
-            "Playbook",
-            "Zero trust"
-          ],
+          "options": ["MDM", "DLP", "Playbook", "Zero trust"],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "security-procedures"
-          ]
+          "tags": ["domain-5", "security-procedures"]
         },
         {
           "type": "mcq",
@@ -4541,10 +2884,7 @@
             "Acceptable use policy"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "agreement-types"
-          ]
+          "tags": ["domain-5", "agreement-types"]
         },
         {
           "type": "mcq",
@@ -4557,10 +2897,7 @@
             "Daily firewall exception reporting"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "user-training"
-          ]
+          "tags": ["domain-5", "user-training"]
         },
         {
           "type": "mcq",
@@ -4573,10 +2910,7 @@
             "Click the link and make a note of the URL"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "security-awareness"
-          ]
+          "tags": ["domain-5", "security-awareness"]
         },
         {
           "type": "mcq",
@@ -4589,42 +2923,23 @@
             "Privilege escalation"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "penetration-tests"
-          ]
+          "tags": ["domain-5", "penetration-tests"]
         },
         {
           "type": "mcq",
           "front": "A company has created an itemized list of tasks to be completed by a third-party service provider. After the services are complete, this document will be used to validate the completion of the services. Which of the following would describe this agreement type?",
           "back": "SOW. A SOW (Statement of Work) is a detailed list of tasks, items, or processes to be completed by a third-party. The SOW lists the job scope, location, deliverables, and any other specifics associated with the agreement. The SOW is also used as a checklist to verify the job was completed properly by the service provider.",
-          "options": [
-            "NDA",
-            "BPA",
-            "SLA",
-            "SOW"
-          ],
+          "options": ["NDA", "BPA", "SLA", "SOW"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-5",
-            "agreement-types"
-          ]
+          "tags": ["domain-5", "agreement-types"]
         },
         {
           "type": "mcq",
           "front": "A security administrator has created a policy to alert if a user modifies the hosts file on their system. Which of the following behaviors does this policy address?",
           "back": "Risky. Making a change to the hosts file can be a security concern, and many systems will prevent this change without elevated permissions. Modifying the hosts file would be categorized as risky behavior.",
-          "options": [
-            "Unintentional",
-            "Risky",
-            "Unexpected",
-            "Self-assessment"
-          ],
+          "options": ["Unintentional", "Risky", "Unexpected", "Self-assessment"],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "security-awareness"
-          ]
+          "tags": ["domain-5", "security-awareness"]
         },
         {
           "type": "mcq",
@@ -4637,26 +2952,15 @@
             "Change management"
           ],
           "correctOptionIndex": 0,
-          "tags": [
-            "domain-5",
-            "security-standards"
-          ]
+          "tags": ["domain-5", "security-standards"]
         },
         {
           "type": "mcq",
           "front": "A security administrator has compiled a list of all information stored and managed by an organization. Which of the following would best describe this list?",
           "back": "Data inventory. A data inventory describes a list of all data managed by an organization. This inventory includes the owner, update frequency, and format of the data.",
-          "options": [
-            "Sanitization",
-            "Metadata",
-            "Known environment",
-            "Data inventory"
-          ],
+          "options": ["Sanitization", "Metadata", "Known environment", "Data inventory"],
           "correctOptionIndex": 3,
-          "tags": [
-            "domain-5",
-            "privacy"
-          ]
+          "tags": ["domain-5", "privacy"]
         },
         {
           "type": "mcq",
@@ -4669,10 +2973,7 @@
             "Onboarding process"
           ],
           "correctOptionIndex": 1,
-          "tags": [
-            "domain-5",
-            "audits-and-assessments"
-          ]
+          "tags": ["domain-5", "audits-and-assessments"]
         },
         {
           "type": "mcq",
@@ -4685,10 +2986,7 @@
             "Proper password management"
           ],
           "correctOptionIndex": 2,
-          "tags": [
-            "domain-5",
-            "user-training"
-          ]
+          "tags": ["domain-5", "user-training"]
         }
       ]
     }

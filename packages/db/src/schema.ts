@@ -122,6 +122,8 @@ export const cards = pgTable(
     options: jsonb("options").$type<string[]>(),
     // Zero-based index of the correct option for MCQ cards; null for flashcard/free_recall
     correctOptionIndex: integer("correct_option_index"),
+    // For "Select TWO" questions: array of correct option indices. Takes precedence over correctOptionIndex.
+    correctOptionIndices: jsonb("correct_option_indices").$type<number[]>(),
     tags: text("tags")
       .array()
       .notNull()
@@ -160,6 +162,13 @@ export const enrollments = pgTable(
     examResult: examResultEnum("exam_result"),
     // Actual scaled score the user received (optional — not all users provide it).
     examScore: integer("exam_score"),
+    // Study plan settings persisted from the StudyPlanCalculator.
+    sessionConfig: jsonb("session_config").$type<{
+      dailyStudyMinutes: number;
+      weeksUntilExam: number;
+      chronotype: string;
+      priorKnowledge: string;
+    }>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

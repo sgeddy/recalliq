@@ -18,6 +18,7 @@ interface SeedCard {
   back: string;
   options?: string[];
   correctOptionIndex?: number;
+  correctOptionIndices?: number[];
   tags: string[];
 }
 
@@ -153,6 +154,7 @@ async function seed(): Promise<void> {
       back: c.back,
       options: c.options ?? null,
       correctOptionIndex: c.correctOptionIndex ?? null,
+      correctOptionIndices: c.correctOptionIndices ?? null,
       tags: c.tags,
     }));
 
