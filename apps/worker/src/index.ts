@@ -9,6 +9,8 @@ import {
   sendEmail,
   sendSms,
 } from "@recalliq/notifications";
+import Anthropic from "@anthropic-ai/sdk";
+
 import {
   and,
   courses,
@@ -18,14 +20,22 @@ import {
   lte,
   notificationJobs,
   reviewEvents,
+  uploads,
+  uploadSources,
   users,
 } from "@recalliq/db";
+
+import type { GeneratedCourse } from "@recalliq/types";
 
 import {
   REVIEW_NOTIFICATION_QUEUE,
   type ReviewNotificationJobData,
 } from "./queues/review-notifications.js";
 import { EXAM_FOLLOWUP_QUEUE, type ExamFollowUpJobData } from "./queues/exam-followup.js";
+import {
+  CONTENT_PROCESSING_QUEUE,
+  type ContentProcessingJobData,
+} from "./queues/content-processing.js";
 import { VOICE_CALL_QUEUE, type VoiceCallJobData } from "./queues/voice-call.js";
 
 const REDIS_URL = process.env["REDIS_URL"] ?? "redis://localhost:6379";
@@ -356,12 +366,229 @@ voiceCallWorker.on("error", (err) => {
   console.error("Voice call worker error:", err);
 });
 
+// ---------------------------------------------------------------------------
+// Content processing worker — AI course generation from uploaded content
+// ---------------------------------------------------------------------------
+
+const CONTENT_PROCESSING_SYSTEM_PROMPT = `You are an expert curriculum designer for a spaced-repetition study tool called RecallIQ.
+
+Given study material, your job is to create a comprehensive study course. The material may be:
+- A practice exam with existing questions (extract them)
+- A study guide, exam blueprint, or certification overview (generate questions from it)
+- A mix of both
+
+Follow these steps:
+
+1. **Extract existing questions.** If the material contains practice exam questions with answer choices, extract them exactly as-is. Preserve the original question text, all answer options, and correct answer(s). For multi-select questions (e.g., "Select TWO", "Choose TWO"), set correctOptionIndices to an array of the correct option indices. For single-answer questions, set correctOptionIndex to the correct option's index and correctOptionIndices to null.
+
+2. **Generate new study content using your own knowledge.** For any topic, domain, objective, or concept mentioned in the material — even if no questions exist for it — use your expertise to create comprehensive practice questions. This is critical: if the material is an exam guide or study outline, you MUST generate substantial content for EVERY topic and objective listed, drawing on your own knowledge of the subject matter. Don't just summarize — create real, exam-level questions that test understanding.
+
+3. **Cover all domains and objectives thoroughly.** If the material lists exam domains with percentage weights (e.g., "Domain 1: 30%"), generate proportionally more questions for higher-weighted domains. Aim for at least 5-10 cards per domain/topic, more for heavily weighted areas.
+
+4. **Organize into modules** by topic/domain. Each module should be a logical grouping matching the material's structure (e.g., exam domains, chapters, sections).
+
+Question generation rules:
+- MCQ questions MUST have exactly 4 options unless the source material specifies more.
+- For "Select TWO" or multi-select questions: set correctOptionIndices to the array of correct indices (0-based), and set correctOptionIndex to null.
+- For single-answer MCQs: set correctOptionIndex to the correct option's index (0-based), and set correctOptionIndices to null.
+- The "back" field is the explanation/answer. For MCQs, explain WHY the correct answer(s) are correct and why the others are wrong.
+- Tags should be lowercase, hyphenated keywords relevant to the card's topic.
+- Generate a mix of card types: mcq (most common), flashcard, and free_recall.
+- Questions should range from foundational knowledge to applied scenarios.
+- Be thorough — aim for comprehensive coverage, not just surface-level.
+- Generate at least 30 cards total, more if the material covers many topics.
+
+Respond with ONLY valid JSON matching this schema:
+{
+  "title": "string — course title derived from the material",
+  "description": "string — 1-2 sentence summary",
+  "category": "string — broad topic category",
+  "difficulty": "beginner" | "intermediate" | "advanced",
+  "modules": [
+    {
+      "title": "string",
+      "description": "string",
+      "position": 1,
+      "cards": [
+        {
+          "type": "mcq" | "flashcard" | "free_recall",
+          "front": "string — the question or prompt",
+          "back": "string — the answer/explanation",
+          "options": ["string", ...] | null,
+          "correctOptionIndex": number | null,
+          "correctOptionIndices": [number, ...] | null,
+          "tags": ["string", ...]
+        }
+      ]
+    }
+  ]
+}`;
+
+const anthropic = new Anthropic();
+
+const contentProcessingWorker = new Worker<ContentProcessingJobData>(
+  CONTENT_PROCESSING_QUEUE,
+  async (job) => {
+    const { uploadId } = job.data;
+
+    job.log(`Processing content for upload ${uploadId}`);
+
+    // Mark as processing
+    await db
+      .update(uploads)
+      .set({ status: "processing", updatedAt: new Date() })
+      .where(eq(uploads.id, uploadId));
+
+    try {
+      // Fetch all sources for this upload
+      const sources = await db
+        .select()
+        .from(uploadSources)
+        .where(eq(uploadSources.uploadId, uploadId));
+
+      if (sources.length === 0) {
+        throw new Error("No sources found for upload");
+      }
+
+      // Fetch URL content for any URL sources that haven't been fetched yet
+      for (const source of sources) {
+        if (source.sourceType === "url" && !source.content) {
+          job.log(`Fetching URL: ${source.name}`);
+          try {
+            const response = await fetch(source.name);
+            if (!response.ok) {
+              job.log(`Failed to fetch ${source.name}: ${response.status}`);
+              continue;
+            }
+            const html = await response.text();
+            // Strip HTML tags to get readable text
+            const text = html
+              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+              .replace(/<[^>]+>/g, " ")
+              .replace(/&nbsp;/g, " ")
+              .replace(/&amp;/g, "&")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")
+              .replace(/\s+/g, " ")
+              .trim();
+
+            await db
+              .update(uploadSources)
+              .set({ content: text })
+              .where(eq(uploadSources.id, source.id));
+
+            source.content = text;
+          } catch (err) {
+            job.log(`Error fetching URL ${source.name}: ${String(err)}`);
+          }
+        }
+      }
+
+      // Combine all source content
+      const combinedContent = sources
+        .filter((s) => s.content)
+        .map((s) => `--- Source: ${s.name} ---\n\n${s.content}`)
+        .join("\n\n");
+
+      if (!combinedContent.trim()) {
+        throw new Error("No content could be extracted from sources");
+      }
+
+      job.log(`Combined content length: ${combinedContent.length} characters`);
+
+      // Call Claude to generate course structure
+      const message = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 16384,
+        system: CONTENT_PROCESSING_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: `Here is the study material to process:\n\n${combinedContent}`,
+          },
+        ],
+      });
+
+      // Extract text response
+      const textBlock = message.content.find((b) => b.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        throw new Error("No text response from AI");
+      }
+
+      // Parse JSON — handle markdown code fences if present
+      let jsonText = textBlock.text.trim();
+      if (jsonText.startsWith("```")) {
+        jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+      }
+
+      const generated = JSON.parse(jsonText) as GeneratedCourse;
+
+      // Validate basic structure
+      if (!generated.title || !generated.modules?.length) {
+        throw new Error("AI response missing required fields (title, modules)");
+      }
+
+      const totalCards = generated.modules.reduce((sum, m) => sum + m.cards.length, 0);
+      job.log(
+        `Generated: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards`,
+      );
+
+      // Store result and mark as ready for review
+      await db
+        .update(uploads)
+        .set({
+          title: generated.title,
+          status: "review",
+          generatedPayload: generated,
+          updatedAt: new Date(),
+        })
+        .where(eq(uploads.id, uploadId));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      job.log(`Content processing failed: ${errorMessage}`);
+
+      await db
+        .update(uploads)
+        .set({
+          status: "failed",
+          errorMessage,
+          updatedAt: new Date(),
+        })
+        .where(eq(uploads.id, uploadId));
+
+      throw err;
+    }
+  },
+  {
+    connection: redis,
+    concurrency: 2,
+  },
+);
+
+contentProcessingWorker.on("completed", (job) => {
+  console.info(`Content processing job ${job.id} completed`);
+});
+
+contentProcessingWorker.on("failed", (job, err) => {
+  console.error(`Content processing job ${job?.id} failed:`, err);
+});
+
+contentProcessingWorker.on("error", (err) => {
+  console.error("Content processing worker error:", err);
+});
+
 console.info("RecallIQ worker started");
 
 // Graceful shutdown
 process.on("SIGTERM", async () => {
   console.info("SIGTERM received, closing worker...");
-  await Promise.all([worker.close(), examFollowUpWorker.close(), voiceCallWorker.close()]);
+  await Promise.all([
+    worker.close(),
+    examFollowUpWorker.close(),
+    voiceCallWorker.close(),
+    contentProcessingWorker.close(),
+  ]);
   await redis.quit();
   process.exit(0);
 });

@@ -42,6 +42,10 @@ export {
   notificationJobs,
   notificationJobStatusEnum,
   reviewEvents,
+  uploads,
+  uploadSources,
+  uploadSourceTypeEnum,
+  uploadStatusEnum,
   users,
 } from "./schema.js";
 
@@ -63,5 +67,9 @@ export type {
   NewDbModule,
   NewDbNotificationJob,
   NewDbReviewEvent,
+  NewDbUpload,
+  NewDbUploadSource,
   NewDbUser,
+  DbUpload,
+  DbUploadSource,
 } from "./schema.js";

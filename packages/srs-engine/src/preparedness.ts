@@ -23,17 +23,32 @@ export interface DomainStatsForPreparedness {
 }
 
 /**
- * Computes a 0–100 preparedness score following the algorithm in FEATURES.md (FEAT-002).
+ * Computes a 0–100 preparedness score.
+ *
+ * Design goals:
+ * - Starts at 0% with no reviews
+ * - Answering questions alone does NOT push the score high quickly
+ * - 90%+ requires consistent correct answers over time across all domains
+ * - Both pass rate AND repetition depth matter equally
  *
  * Per-card confidence:
- *   intervalWeight = intervalIndex / maxIntervalIndex     (0 at first pass, 1 at long-term)
- *   passRate       = correct / attempts
- *   recencyFactor  = exp(-ln2 * daysSinceReview / currentIntervalDays)
- *                    → 1.0 when just reviewed, 0.5 when one full interval has elapsed
- *   cardScore      = intervalWeight × passRate × recencyFactor
+ *   retentionDepth = (intervalIndex / maxIntervalIndex) ^ 1.5
+ *     → Exponential curve: early intervals contribute very little,
+ *       only deep retention (index 5+ of 8) yields significant weight.
+ *       Index 1/8 = 0.044, Index 4/8 = 0.354, Index 7/8 = 0.827
  *
- * Per-domain score:   mean(cardScore) over all cards in domain
- * Overall score:      Σ(domainScore × domainWeight) / Σ(domainWeight)   → scaled 0–100
+ *   passRate = correct / attempts
+ *     → Straight ratio, but combined with depth means a perfect score
+ *       on shallow cards is still a low contribution.
+ *
+ *   recencyFactor = exp(-ln2 * daysSince / currentIntervalDays)
+ *     → 1.0 when just reviewed, 0.5 when one full interval has elapsed.
+ *       Ensures cards not reviewed recently decay.
+ *
+ *   cardScore = retentionDepth × passRate × recencyFactor
+ *
+ * Per-domain score:   mean(cardScore) over ALL cards (including unreviewed = 0)
+ * Overall score:      Σ(domainScore × domainWeight) / Σ(domainWeight) × 100
  */
 export function computePreparednessScore(
   domains: DomainStatsForPreparedness[],
@@ -54,17 +69,19 @@ export function computePreparednessScore(
     let domainTotal = 0;
     for (const card of domain.cards) {
       if (card.attempts === 0) {
-        // Unreviewed card contributes 0 — drags the score down appropriately.
+        // Unreviewed card contributes 0 — drags the domain average down.
         continue;
       }
 
-      // intervalWeight: 0 at index 0, caps at 1 for long-term retention
-      const intervalWeight = Math.min(card.intervalIndex / maxIntervalIndex, 1);
+      // retentionDepth: exponential curve (power 1.5) so early intervals
+      // contribute very little. Only sustained correct answers over many
+      // review cycles push the score toward 1.0.
+      const normalizedDepth = Math.min(card.intervalIndex / maxIntervalIndex, 1);
+      const retentionDepth = Math.pow(normalizedDepth, 1.5);
 
       const passRate = card.correct / card.attempts;
 
       // recencyFactor: exponential decay with half-life = currentIntervalDays.
-      // Knowledge reviewed today = 1.0; reviewed one full interval ago = 0.5.
       const currentIntervalDays = intervalDays(card.intervalIndex, defaultIntervals);
       let recencyFactor: number;
       if (card.lastReviewedAt === null) {
@@ -74,9 +91,10 @@ export function computePreparednessScore(
         recencyFactor = Math.exp(-0.693 * (daysSince / Math.max(currentIntervalDays, 1)));
       }
 
-      domainTotal += intervalWeight * passRate * recencyFactor;
+      domainTotal += retentionDepth * passRate * recencyFactor;
     }
 
+    // Divide by ALL cards (not just attempted) so unreviewed cards drag score down
     const domainScore = domainTotal / domain.cards.length;
     weightedSum += domainScore * domain.weightPercent;
   }

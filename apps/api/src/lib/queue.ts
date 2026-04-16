@@ -7,6 +7,7 @@ import { Redis } from "ioredis";
 
 export const REVIEW_NOTIFICATION_QUEUE = "review-notifications";
 export const EXAM_FOLLOWUP_QUEUE = "exam-followup";
+export const CONTENT_PROCESSING_QUEUE = "content-processing";
 
 const MAX_RETRIES = 3;
 
@@ -52,3 +53,12 @@ export const examFollowUpQueue = new Queue<ExamFollowUpJobData>(EXAM_FOLLOWUP_QU
   connection: redis,
   defaultJobOptions,
 });
+
+export interface ContentProcessingJobData {
+  uploadId: string;
+}
+
+export const contentProcessingQueue = new Queue<ContentProcessingJobData>(
+  CONTENT_PROCESSING_QUEUE,
+  { connection: redis, defaultJobOptions },
+);

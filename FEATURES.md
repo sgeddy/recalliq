@@ -235,6 +235,17 @@ exam_outcomes table:
 - Supported formats: PDF, DOCX, TXT, MD
 - Processing happens async (BullMQ job) — user gets notified when ready
 
+**URL ingestion (extension to file upload):**
+
+- User can paste a public URL instead of (or in addition to) uploading files
+- Examples: certification practice guides, official exam objective pages, public study wikis (e.g. an Intel swarming cert guide hosted publicly)
+- Worker fetches the URL and recursively crawls child pages up to a configurable depth (default: 2 levels)
+- Only same-domain links followed — no unbounded crawl
+- HTML is stripped to readable text before passing to AI; code blocks, tables, and lists preserved
+- Robots.txt is respected; pages returning 4xx/5xx are skipped with a warning
+- Rate limiting on crawl: max 1 req/sec per domain to avoid abuse
+- Same async BullMQ processing flow as file uploads — user notified when curriculum is ready
+
 **DB changes needed:**
 
 - `courses`: add `is_user_generated BOOLEAN DEFAULT false`, `owner_user_id TEXT` (nullable — null = platform-owned)
@@ -305,9 +316,13 @@ exam_outcomes table:
 ## Completed (not in backlog)
 
 - Mock exam sessions — full state machine, domain-weighted questions, scaled scoring, domain breakdown, review mode ✓
-- Voice review sessions — Twilio Conversation Relay + ElevenLabs TTS + Claude Haiku AI agent ✓
 - Post-exam follow-up email + maintenance reminder jobs ✓
 - 288-question practice bank (Professor Messer SY0-701, transformed) ✓
+
+## Scaffolded but NOT tested / set up
+
+- **Voice review sessions** — Twilio Conversation Relay + ElevenLabs TTS + Claude Haiku AI agent. Code exists but env vars have never been configured and the flow has never been tested end-to-end. Requires: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_INTELLIGENCE_SERVICE_SID, ELEVENLABS_VOICE_ID, ANTHROPIC_API_KEY (see env var setup instructions).
+- **SMS review reminders** — Twilio SMS scaffolded; needs phone number collection UI.
 
 ## Future / Out-of-Scope for Now
 

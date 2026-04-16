@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
     "@recalliq/db": "workspace:*",
     "@recalliq/notifications": "workspace:*",
     "@recalliq/srs-engine": "workspace:*",

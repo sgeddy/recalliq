@@ -10,6 +10,7 @@ import { enrollmentRoutes } from "./routes/enrollments.js";
 import { healthRoutes } from "./routes/health.js";
 import { mockExamRoutes } from "./routes/mock-exams.js";
 import { reviewRoutes } from "./routes/reviews.js";
+import { uploadRoutes } from "./routes/uploads.js";
 import { voiceRoutes } from "./routes/voice.js";
 
 const PORT = parseInt(process.env["API_PORT"] ?? "3001", 10);
@@ -56,6 +57,7 @@ async function buildServer() {
   await fastify.register(enrollmentRoutes);
   await fastify.register(mockExamRoutes);
   await fastify.register(reviewRoutes);
+  await fastify.register(uploadRoutes);
   await fastify.register(voiceRoutes);
 
   return fastify;

@@ -105,6 +105,41 @@ export interface NotificationJob {
   createdAt: Date;
 }
 
+// ---------------------------------------------------------------------------
+// AI-generated course payload (stored in uploads.generated_payload)
+// ---------------------------------------------------------------------------
+
+export interface GeneratedCard {
+  type: CardType;
+  front: string;
+  back: string;
+  options: string[] | null;
+  correctOptionIndex: number | null;
+  // Multi-select questions (e.g., "Select TWO"): array of correct indices
+  correctOptionIndices: number[] | null;
+  tags: string[];
+}
+
+export interface GeneratedModule {
+  title: string;
+  description: string;
+  position: number;
+  cards: GeneratedCard[];
+}
+
+export interface GeneratedCourse {
+  title: string;
+  description: string;
+  category: string;
+  difficulty: CourseDifficulty;
+  modules: GeneratedModule[];
+}
+
+// Upload types
+
+export type UploadStatus = "pending" | "processing" | "review" | "confirmed" | "failed";
+export type UploadSourceType = "file" | "url";
+
 // SRS Engine types
 export interface ReviewResult {
   enrollmentId: string;

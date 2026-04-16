@@ -50,6 +50,16 @@ export const mockExamStatusEnum = pgEnum("mock_exam_status", [
   "abandoned",
 ]);
 
+export const uploadStatusEnum = pgEnum("upload_status", [
+  "pending",
+  "processing",
+  "review",
+  "confirmed",
+  "failed",
+]);
+
+export const uploadSourceTypeEnum = pgEnum("upload_source_type", ["file", "url"]);
+
 // ---------------------------------------------------------------------------
 // Tables
 // ---------------------------------------------------------------------------
@@ -71,6 +81,8 @@ export const courses = pgTable(
   "courses",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    // Owner of user-generated courses; null = platform-owned
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
     slug: text("slug").notNull().unique(),
     title: text("title").notNull(),
     description: text("description"),
@@ -87,6 +99,7 @@ export const courses = pgTable(
   (t) => ({
     statusIdx: index("courses_status_idx").on(t.status),
     categoryIdx: index("courses_category_idx").on(t.category),
+    userIdx: index("courses_user_id_idx").on(t.userId),
   }),
 );
 
@@ -292,6 +305,49 @@ export const mockExamAnswers = pgTable(
   }),
 );
 
+export const uploads = pgTable(
+  "uploads",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title"),
+    status: uploadStatusEnum("status").notNull().default("pending"),
+    // AI-generated course structure stored for user review before confirming
+    generatedPayload: jsonb("generated_payload"),
+    // Set after user confirms and course is persisted
+    courseId: uuid("course_id").references(() => courses.id, { onDelete: "set null" }),
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    userIdx: index("uploads_user_id_idx").on(t.userId),
+    statusIdx: index("uploads_status_idx").on(t.status),
+  }),
+);
+
+export const uploadSources = pgTable(
+  "upload_sources",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    uploadId: uuid("upload_id")
+      .notNull()
+      .references(() => uploads.id, { onDelete: "cascade" }),
+    sourceType: uploadSourceTypeEnum("source_type").notNull(),
+    // Original filename or URL
+    name: text("name").notNull(),
+    mimeType: text("mime_type"),
+    // Extracted text content from the file or URL
+    content: text("content"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    uploadIdx: index("upload_sources_upload_id_idx").on(t.uploadId),
+  }),
+);
+
 // ---------------------------------------------------------------------------
 // Schema type exports for use with Drizzle's InferSelectModel / InferInsertModel
 // ---------------------------------------------------------------------------
@@ -322,3 +378,9 @@ export type NewDbMockExamSession = typeof mockExamSessions.$inferInsert;
 
 export type DbMockExamAnswer = typeof mockExamAnswers.$inferSelect;
 export type NewDbMockExamAnswer = typeof mockExamAnswers.$inferInsert;
+
+export type DbUpload = typeof uploads.$inferSelect;
+export type NewDbUpload = typeof uploads.$inferInsert;
+
+export type DbUploadSource = typeof uploadSources.$inferSelect;
+export type NewDbUploadSource = typeof uploadSources.$inferInsert;
