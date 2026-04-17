@@ -1,0 +1,17 @@
+study.samueleddy.com {
+	# API requests — strip /api prefix and proxy to Fastify
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy api:3001
+	}
+
+	# WebSocket for voice — proxy to API
+	handle /ws/* {
+		reverse_proxy api:3001
+	}
+
+	# Everything else goes to Next.js
+	handle {
+		reverse_proxy web:3000
+	}
+}

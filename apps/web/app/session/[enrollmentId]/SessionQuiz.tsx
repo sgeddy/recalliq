@@ -72,14 +72,24 @@ export function SessionQuiz({
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
 
   // Derive the active card set from the picker.
-  // Due reviews always come first; new cards are capped by session duration.
-  const newCardSlots = Math.floor((pickedMinutes * 60) / SECONDS_PER_CARD);
-  const activeNewCards = newCards.slice(0, newCardSlots);
-  const cards = [...dueReviews, ...activeNewCards];
+  //
+  // Priority order:
+  //   1. New cards first — user should see every card at least once before
+  //      being asked to review what they've already answered.
+  //   2. Due reviews fill the remaining slots.
+  //
+  // The total is capped by session duration (minutes × 60 / seconds-per-card).
+  const totalSlots = Math.floor((pickedMinutes * 60) / SECONDS_PER_CARD);
+  const activeNewCards = newCards.slice(0, totalSlots);
+  const remainingSlots = Math.max(0, totalSlots - activeNewCards.length);
+  const activeDueReviews = dueReviews.slice(0, remainingSlots);
+  const cards = [...activeNewCards, ...activeDueReviews];
 
-  const isResuming = completedDueReviews > 0 || completedNewCards > 0;
-  const completedCards = completedDueReviews + completedNewCards;
-  const totalCards = cards.length + completedCards;
+  // Each session starts fresh at 1/N. Historical completedDueReviews and
+  // completedNewCards from the API are intentionally ignored — they reflect
+  // total review_event history, not current-session progress.
+  const completedCards = 0;
+  const totalCards = cards.length;
 
   const remainingCards = cards.length;
   const currentCard = cards[cardIndex];
@@ -104,81 +114,85 @@ export function SessionQuiz({
           </p>
           <h1 className="mb-2 text-2xl font-bold text-gray-900">{courseTitle}</h1>
 
-          {isResuming ? (
-            <p className="mb-4 text-gray-500">
-              You&rsquo;ve completed{" "}
-              <strong className="text-gray-700">
-                {completedCards} of {totalCards}
-              </strong>{" "}
-              questions. Pick up where you left off.
-            </p>
-          ) : (
-            <p className="mb-4 text-gray-500">
-              Your session is ready. Review{" "}
-              <strong className="text-gray-700">
-                {dueReviews.length} due card{dueReviews.length !== 1 ? "s" : ""}
-              </strong>
-              {activeNewCards.length > 0 && (
-                <>
-                  {" "}
-                  and learn{" "}
-                  <strong className="text-gray-700">
-                    {activeNewCards.length} new card{activeNewCards.length !== 1 ? "s" : ""}
-                  </strong>
-                </>
-              )}
-              .
-            </p>
-          )}
+          <p className="mb-4 text-gray-500">
+            Your session is ready.{" "}
+            {activeNewCards.length > 0 && (
+              <>
+                Learn{" "}
+                <strong className="text-gray-700">
+                  {activeNewCards.length} new card{activeNewCards.length !== 1 ? "s" : ""}
+                </strong>
+                {activeDueReviews.length > 0 && ", then "}
+              </>
+            )}
+            {activeDueReviews.length > 0 && (
+              <>
+                {activeNewCards.length === 0 && "Review "}
+                review{" "}
+                <strong className="text-gray-700">
+                  {activeDueReviews.length} due card{activeDueReviews.length !== 1 ? "s" : ""}
+                </strong>
+              </>
+            )}
+            .
+            {dueReviews.length > activeDueReviews.length && (
+              <>
+                {" "}
+                <span className="text-xs text-gray-400">
+                  ({dueReviews.length - activeDueReviews.length} more due cards will carry to your
+                  next session)
+                </span>
+              </>
+            )}
+          </p>
 
-          {/* Session length picker — only shown when not mid-batch */}
-          {!isResuming && (
-            <div className="mb-6">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                How long do you want to study?
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {SESSION_DURATION_OPTIONS.map((min) => {
-                  const slots = Math.floor((min * 60) / SECONDS_PER_CARD);
-                  const available = Math.min(slots, newCards.length);
-                  return (
-                    <button
-                      key={min}
-                      type="button"
-                      onClick={() => setPickedMinutes(min)}
-                      className={[
-                        "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-                        pickedMinutes === min
-                          ? "border-indigo-600 bg-indigo-600 text-white"
-                          : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:bg-indigo-50",
-                      ].join(" ")}
-                    >
-                      {min} min
-                      {available > 0 && (
-                        <span className="ml-1.5 text-xs opacity-70">
-                          ({dueReviews.length + available} cards)
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              {sessionCap !== newCardSlots && (
-                <p className="mt-2 text-xs text-indigo-600">
-                  Your study plan default is {sessionMinutes} min. You can adjust per session.
-                </p>
-              )}
+          {/* Session length picker */}
+          <div className="mb-6">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              How long do you want to study?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SESSION_DURATION_OPTIONS.map((min) => {
+                const slots = Math.floor((min * 60) / SECONDS_PER_CARD);
+                // Card count for this duration = new cards first, then due reviews fill remaining
+                const newForMin = Math.min(slots, newCards.length);
+                const reviewForMin = Math.min(Math.max(0, slots - newForMin), dueReviews.length);
+                const totalForMin = newForMin + reviewForMin;
+                return (
+                  <button
+                    key={min}
+                    type="button"
+                    onClick={() => setPickedMinutes(min)}
+                    className={[
+                      "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                      pickedMinutes === min
+                        ? "border-indigo-600 bg-indigo-600 text-white"
+                        : "border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:bg-indigo-50",
+                    ].join(" ")}
+                  >
+                    {min} min
+                    {totalForMin > 0 && (
+                      <span className="ml-1.5 text-xs opacity-70">({totalForMin} cards)</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          )}
+            {sessionCap !== totalSlots && (
+              <p className="mt-2 text-xs text-indigo-600">
+                Your study plan default is {sessionMinutes} min. You can adjust per session.
+              </p>
+            )}
+          </div>
 
           <div className="mb-6 grid grid-cols-3 gap-3">
             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
-              <p className="text-2xl font-bold text-indigo-600">{dueReviews.length}</p>
-              <p className="mt-0.5 text-xs text-gray-500">due reviews</p>
-            </div>
-            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
               <p className="text-2xl font-bold text-indigo-600">{activeNewCards.length}</p>
               <p className="mt-0.5 text-xs text-gray-500">new cards</p>
+            </div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
+              <p className="text-2xl font-bold text-indigo-600">{activeDueReviews.length}</p>
+              <p className="mt-0.5 text-xs text-gray-500">due reviews</p>
             </div>
             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center">
               <p className="text-2xl font-bold text-indigo-600">~{estimatedMinutes}</p>
@@ -195,7 +209,7 @@ export function SessionQuiz({
               onClick={() => setHasStarted(true)}
               className="flex-1 rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700"
             >
-              {isResuming ? "Resume session" : "Start session"}
+              Start session
             </button>
             <a
               href={`/learn/${enrollmentId}`}
