@@ -177,12 +177,19 @@ export const uploadRoutes: FastifyPluginAsync = async (fastify) => {
     const fileSources: { name: string; mimeType: string; content: string }[] = [];
     const urlSources: string[] = [];
     let title: string | null = null;
+    let contentType = "practice_exam";
 
     for await (const part of parts) {
       if (part.type === "field") {
         const val = typeof part.value === "string" ? part.value.trim() : "";
         if (part.fieldname === "title" && val) {
           title = val.slice(0, MAX_TITLE_LENGTH);
+        }
+        if (
+          part.fieldname === "contentType" &&
+          ["practice_exam", "study_guide", "mixed"].includes(val)
+        ) {
+          contentType = val;
         }
         if (part.fieldname === "url" && val) {
           // Validate URL: only http/https, no private IPs
@@ -253,6 +260,7 @@ export const uploadRoutes: FastifyPluginAsync = async (fastify) => {
       .values({
         userId: user.id,
         title,
+        contentType,
         status: "pending",
       })
       .returning();

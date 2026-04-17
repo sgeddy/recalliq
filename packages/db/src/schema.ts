@@ -314,6 +314,8 @@ export const uploads = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     title: text("title"),
     status: uploadStatusEnum("status").notNull().default("pending"),
+    // 'practice_exam' | 'study_guide' | 'mixed' — controls AI model selection
+    contentType: text("content_type").notNull().default("practice_exam"),
     // AI-generated course structure stored for user review before confirming
     generatedPayload: jsonb("generated_payload"),
     // Set after user confirms and course is persisted

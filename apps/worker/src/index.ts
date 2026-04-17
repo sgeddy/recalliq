@@ -433,11 +433,23 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
 
     job.log(`Processing content for upload ${uploadId}`);
 
-    // Mark as processing
+    // Fetch upload record for contentType, then mark as processing
+    const [uploadRecord] = await db
+      .select({ contentType: uploads.contentType })
+      .from(uploads)
+      .where(eq(uploads.id, uploadId))
+      .limit(1);
+
+    const contentType = uploadRecord?.contentType ?? "practice_exam";
+    const extractionModel =
+      contentType === "practice_exam" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-20250514";
+
     await db
       .update(uploads)
       .set({ status: "processing", updatedAt: new Date() })
       .where(eq(uploads.id, uploadId));
+
+    job.log(`Content type: ${contentType}, extraction model: ${extractionModel}`);
 
     try {
       // Fetch all sources for this upload
@@ -534,57 +546,80 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
         return jsonText;
       }
 
+      // Process all chunks from all sources, running up to MAX_PARALLEL at once.
+      const MAX_PARALLEL = 3;
+
+      interface ChunkTask {
+        sourceName: string;
+        chunk: string;
+        label: string;
+      }
+
+      const chunkTasks: ChunkTask[] = [];
       for (const source of sourcesWithContent) {
         const content = source.content!;
         const chunks = splitIntoChunks(content);
         job.log(
           `Processing source: ${source.name} (${content.length} chars, ${chunks.length} chunk${chunks.length !== 1 ? "s" : ""})`,
         );
-
         for (let ci = 0; ci < chunks.length; ci++) {
-          const chunk = chunks[ci]!;
-          const chunkLabel = chunks.length > 1 ? ` (chunk ${ci + 1}/${chunks.length})` : "";
+          const label = chunks.length > 1 ? ` (chunk ${ci + 1}/${chunks.length})` : "";
+          chunkTasks.push({ sourceName: source.name, chunk: chunks[ci]!, label });
+        }
+      }
 
-          job.log(`Extracting questions from ${source.name}${chunkLabel} (${chunk.length} chars)`);
+      async function processChunk(task: ChunkTask): Promise<GeneratedCourse | null> {
+        job.log(
+          `Extracting questions from ${task.sourceName}${task.label} (${task.chunk.length} chars)`,
+        );
 
-          const stream = anthropic.messages.stream({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 64000,
-            system: CONTENT_PROCESSING_SYSTEM_PROMPT,
-            messages: [
-              {
-                role: "user",
-                content: `Here is the study material to process. Extract EVERY question — do not skip or summarize. If this is a practice exam, extract ALL questions with their exact options and correct answers.\n\n${chunk}`,
-              },
-            ],
-          });
+        const stream = anthropic.messages.stream({
+          model: extractionModel,
+          max_tokens: 64000,
+          system: CONTENT_PROCESSING_SYSTEM_PROMPT,
+          messages: [
+            {
+              role: "user",
+              content: `Here is the study material to process. Extract EVERY question — do not skip or summarize. If this is a practice exam, extract ALL questions with their exact options and correct answers.\n\n${task.chunk}`,
+            },
+          ],
+        });
 
-          const message = await stream.finalMessage();
+        const message = await stream.finalMessage();
 
-          const textBlock = message.content.find((b) => b.type === "text");
-          if (!textBlock || textBlock.type !== "text") {
-            job.log(`No text response for ${source.name}${chunkLabel}`);
-            continue;
-          }
+        const textBlock = message.content.find((b) => b.type === "text");
+        if (!textBlock || textBlock.type !== "text") {
+          job.log(`No text response for ${task.sourceName}${task.label}`);
+          return null;
+        }
 
-          if (message.stop_reason === "max_tokens") {
-            job.log(
-              `WARNING: output truncated for ${source.name}${chunkLabel} — some questions may be missing`,
-            );
-          }
+        if (message.stop_reason === "max_tokens") {
+          job.log(
+            `WARNING: output truncated for ${task.sourceName}${task.label} — some questions may be missing`,
+          );
+        }
 
-          const jsonText = parseJsonFromResponse(textBlock.text);
+        const jsonText = parseJsonFromResponse(textBlock.text);
 
-          try {
-            const parsed = JSON.parse(jsonText) as GeneratedCourse;
-            const cardCount = parsed.modules?.reduce((s, m) => s + m.cards.length, 0) ?? 0;
-            job.log(
-              `${source.name}${chunkLabel}: ${parsed.modules?.length ?? 0} modules, ${cardCount} cards`,
-            );
-            allSourceResults.push(parsed);
-          } catch (parseErr) {
-            job.log(`Failed to parse JSON for ${source.name}${chunkLabel}: ${String(parseErr)}`);
-          }
+        try {
+          const parsed = JSON.parse(jsonText) as GeneratedCourse;
+          const cardCount = parsed.modules?.reduce((s, m) => s + m.cards.length, 0) ?? 0;
+          job.log(
+            `${task.sourceName}${task.label}: ${parsed.modules?.length ?? 0} modules, ${cardCount} cards`,
+          );
+          return parsed;
+        } catch (parseErr) {
+          job.log(`Failed to parse JSON for ${task.sourceName}${task.label}: ${String(parseErr)}`);
+          return null;
+        }
+      }
+
+      // Run chunks in batches of MAX_PARALLEL
+      for (let i = 0; i < chunkTasks.length; i += MAX_PARALLEL) {
+        const batch = chunkTasks.slice(i, i + MAX_PARALLEL);
+        const results = await Promise.all(batch.map(processChunk));
+        for (const result of results) {
+          if (result) allSourceResults.push(result);
         }
       }
 
