@@ -498,7 +498,8 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
       for (const source of sourcesWithContent) {
         job.log(`Processing source: ${source.name} (${source.content!.length} chars)`);
 
-        const message = await anthropic.messages.create({
+        // Use streaming to avoid 10-minute timeout on large PDFs
+        const stream = anthropic.messages.stream({
           model: "claude-sonnet-4-20250514",
           max_tokens: 64000,
           system: CONTENT_PROCESSING_SYSTEM_PROMPT,
@@ -509,6 +510,8 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
             },
           ],
         });
+
+        const message = await stream.finalMessage();
 
         const textBlock = message.content.find((b) => b.type === "text");
         if (!textBlock || textBlock.type !== "text") {
