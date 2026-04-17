@@ -516,10 +516,22 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
         throw new Error("No text response from AI");
       }
 
-      // Parse JSON — handle markdown code fences if present
+      // Extract JSON from response — handle preamble text, markdown fences, etc.
       let jsonText = textBlock.text.trim();
-      if (jsonText.startsWith("```")) {
-        jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+
+      // Strip markdown code fences
+      const fenceMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+      if (fenceMatch) {
+        jsonText = fenceMatch[1]!.trim();
+      }
+
+      // If response starts with non-JSON text, find the first { and last }
+      if (!jsonText.startsWith("{")) {
+        const firstBrace = jsonText.indexOf("{");
+        const lastBrace = jsonText.lastIndexOf("}");
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+        }
       }
 
       const generated = JSON.parse(jsonText) as GeneratedCourse;
