@@ -582,7 +582,7 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
       const cardSummaries = allCards.map((c, i) => `[${i}] ${c.front.slice(0, 150)}`).join("\n");
 
       const organizeStream = anthropic.messages.stream({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 16384,
         system: `You are organizing study questions into domain modules for a course.
 
