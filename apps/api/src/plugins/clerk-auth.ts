@@ -10,7 +10,8 @@ declare module "fastify" {
 // Derive JWKS URL from publishable key:
 // pk_test_BASE64$ → decode base64 → "your-instance.clerk.accounts.dev$" → strip $
 function getJwksUrl(): string {
-  const pubKey = process.env["CLERK_PUBLISHABLE_KEY"] ?? "";
+  const pubKey =
+    process.env["CLERK_PUBLISHABLE_KEY"] ?? process.env["NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"] ?? "";
   const encoded = pubKey.split("_")[2] ?? "";
   const decoded = Buffer.from(encoded, "base64").toString("utf-8").replace(/\$$/, "");
   return `https://${decoded}/.well-known/jwks.json`;
