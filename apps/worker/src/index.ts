@@ -25,7 +25,7 @@ import {
   users,
 } from "@recalliq/db";
 
-import type { GeneratedCourse, GeneratedModule } from "@recalliq/types";
+import type { GeneratedCourse } from "@recalliq/types";
 
 import {
   REVIEW_NOTIFICATION_QUEUE,
@@ -551,35 +551,14 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
         throw new Error("No valid results from any source");
       }
 
-      // Merge all source results into one course.
-      // Use the first result's metadata, merge all modules, deduplicate by question text.
+      // Step 1: Collect all unique cards across all sources (flat, deduplicated)
       const first = allSourceResults[0]!;
-      const generated: GeneratedCourse = {
-        title: first.title,
-        description: first.description,
-        category: first.category,
-        difficulty: first.difficulty,
-        modules: [],
-      };
-
-      // Collect all cards across all sources, grouped by module title
-      const moduleMap = new Map<string, GeneratedModule>();
+      const allCards: GeneratedCourse["modules"][0]["cards"] = [];
       const seenQuestions = new Set<string>();
 
       for (const result of allSourceResults) {
         for (const mod of result.modules ?? []) {
-          const key = mod.title.toLowerCase().trim();
-          if (!moduleMap.has(key)) {
-            moduleMap.set(key, {
-              title: mod.title,
-              description: mod.description,
-              position: moduleMap.size + 1,
-              cards: [],
-            });
-          }
-          const merged = moduleMap.get(key)!;
           for (const card of mod.cards) {
-            // Deduplicate by normalized question text (first 100 chars)
             const normalizedFront = card.front
               .toLowerCase()
               .replace(/\s+/g, " ")
@@ -587,17 +566,154 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
               .slice(0, 100);
             if (!seenQuestions.has(normalizedFront)) {
               seenQuestions.add(normalizedFront);
-              merged.cards.push(card);
+              allCards.push(card);
             }
           }
         }
       }
 
-      generated.modules = Array.from(moduleMap.values());
+      job.log(
+        `Collected ${allCards.length} unique cards from ${allSourceResults.length} sources. Organizing into domains...`,
+      );
+
+      // Step 2: Use AI to organize cards into proper domain modules.
+      // Send just the question text (not full card data) to classify each card
+      // into the right domain, then rebuild the structure.
+      const cardSummaries = allCards.map((c, i) => `[${i}] ${c.front.slice(0, 150)}`).join("\n");
+
+      const organizeStream = anthropic.messages.stream({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 16384,
+        system: `You are organizing study questions into domain modules for a course.
+
+Given a list of questions (each with an index number), assign each question to the most appropriate domain module. The modules should reflect the actual subject structure — for certification exams, use the official exam domains. For other topics, create 3-8 logical groupings.
+
+For example, CompTIA Security+ SY0-701 has these domains:
+- Domain 1.0 - General Security Concepts (12%)
+- Domain 2.0 - Threats, Vulnerabilities, and Mitigations (22%)
+- Domain 3.0 - Security Architecture (18%)
+- Domain 4.0 - Security Operations (28%)
+- Domain 5.0 - Security Program Management and Oversight (20%)
+
+Respond with ONLY valid JSON:
+{
+  "title": "string — course title",
+  "description": "string — 1-2 sentence summary",
+  "category": "string",
+  "difficulty": "beginner" | "intermediate" | "advanced",
+  "modules": [
+    {
+      "title": "string — domain/module name",
+      "description": "string",
+      "position": 1,
+      "cardIndices": [0, 1, 5, 12, ...]
+    }
+  ]
+}
+
+Every question index must appear in exactly one module. Do not skip any indices.`,
+        messages: [
+          {
+            role: "user",
+            content: `Organize these ${allCards.length} questions into domain modules:\n\n${cardSummaries}`,
+          },
+        ],
+      });
+
+      const organizeMessage = await organizeStream.finalMessage();
+      const organizeBlock = organizeMessage.content.find((b) => b.type === "text");
+
+      let generated: GeneratedCourse;
+
+      if (organizeBlock && organizeBlock.type === "text") {
+        let orgJson = organizeBlock.text.trim();
+        const orgFence = orgJson.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+        if (orgFence) orgJson = orgFence[1]!.trim();
+        if (!orgJson.startsWith("{")) {
+          const fb = orgJson.indexOf("{");
+          const lb = orgJson.lastIndexOf("}");
+          if (fb !== -1 && lb !== -1) orgJson = orgJson.slice(fb, lb + 1);
+        }
+
+        try {
+          const organization = JSON.parse(orgJson) as {
+            title: string;
+            description: string;
+            category: string;
+            difficulty: "beginner" | "intermediate" | "advanced";
+            modules: {
+              title: string;
+              description: string;
+              position: number;
+              cardIndices: number[];
+            }[];
+          };
+
+          // Rebuild modules with actual card data
+          generated = {
+            title: organization.title || first.title,
+            description: organization.description || first.description,
+            category: organization.category || first.category,
+            difficulty: organization.difficulty || first.difficulty,
+            modules: organization.modules.map((mod) => ({
+              title: mod.title,
+              description: mod.description,
+              position: mod.position,
+              cards: mod.cardIndices
+                .filter((i) => i >= 0 && i < allCards.length)
+                .map((i) => allCards[i]!),
+            })),
+          };
+
+          // Check for any unassigned cards and put them in an "Other" module
+          const assignedIndices = new Set(organization.modules.flatMap((m) => m.cardIndices));
+          const unassigned = allCards.filter((_, i) => !assignedIndices.has(i));
+          if (unassigned.length > 0) {
+            generated.modules.push({
+              title: "Other Topics",
+              description: "Questions not assigned to a specific domain",
+              position: generated.modules.length + 1,
+              cards: unassigned,
+            });
+            job.log(`${unassigned.length} cards were unassigned and placed in "Other Topics"`);
+          }
+        } catch {
+          job.log("Failed to parse organization response, falling back to flat merge");
+          generated = {
+            title: first.title,
+            description: first.description,
+            category: first.category,
+            difficulty: first.difficulty,
+            modules: [
+              {
+                title: "All Questions",
+                description: "All extracted questions",
+                position: 1,
+                cards: allCards,
+              },
+            ],
+          };
+        }
+      } else {
+        generated = {
+          title: first.title,
+          description: first.description,
+          category: first.category,
+          difficulty: first.difficulty,
+          modules: [
+            {
+              title: "All Questions",
+              description: "All extracted questions",
+              position: 1,
+              cards: allCards,
+            },
+          ],
+        };
+      }
 
       const totalCards = generated.modules.reduce((sum, m) => sum + m.cards.length, 0);
       job.log(
-        `Merged: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards (${seenQuestions.size} unique, from ${allSourceResults.length} sources)`,
+        `Organized: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards (${seenQuestions.size} unique, from ${allSourceResults.length} sources)`,
       );
 
       // Store result and mark as ready for review
