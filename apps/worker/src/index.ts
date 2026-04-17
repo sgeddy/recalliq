@@ -665,17 +665,13 @@ Every question index must appear in exactly one module. Do not skip any indices.
             })),
           };
 
-          // Check for any unassigned cards and put them in an "Other" module
+          // Assign any unassigned cards to the last module (typically the broadest)
           const assignedIndices = new Set(organization.modules.flatMap((m) => m.cardIndices));
           const unassigned = allCards.filter((_, i) => !assignedIndices.has(i));
-          if (unassigned.length > 0) {
-            generated.modules.push({
-              title: "Other Topics",
-              description: "Questions not assigned to a specific domain",
-              position: generated.modules.length + 1,
-              cards: unassigned,
-            });
-            job.log(`${unassigned.length} cards were unassigned and placed in "Other Topics"`);
+          if (unassigned.length > 0 && generated.modules.length > 0) {
+            const lastModule = generated.modules[generated.modules.length - 1]!;
+            lastModule.cards.push(...unassigned);
+            job.log(`${unassigned.length} unassigned cards added to "${lastModule.title}"`);
           }
         } catch {
           job.log("Failed to parse organization response, falling back to flat merge");
