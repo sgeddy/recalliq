@@ -15,7 +15,10 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import type { FastifyPluginAsync } from "fastify";
-import type { WebSocket } from "@fastify/websocket";
+// NOTE: voice routes are scaffolded but not yet tested end-to-end.
+// Using 'any' for WebSocket type until Twilio voice setup is complete.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WebSocket = any;
 import twilio from "twilio";
 
 import {
@@ -286,10 +289,11 @@ export const voiceRoutes: FastifyPluginAsync = async (fastify) => {
   // -------------------------------------------------------------------------
   // WebSocket /ws/review — ConversationRelay handler
   // -------------------------------------------------------------------------
-  fastify.get("/ws/review", { websocket: true }, (socket: WebSocket, _request) => {
+  fastify.get("/ws/review", { websocket: true }, (socket, _request) => {
+    const ws = socket as unknown as WebSocket;
     let session: VoiceSession | null = null;
 
-    socket.on("message", async (raw: Buffer | string) => {
+    ws.on("message", async (raw: Buffer | string) => {
       let msg: Record<string, unknown>;
       try {
         msg = JSON.parse(raw.toString()) as Record<string, unknown>;
@@ -317,7 +321,7 @@ export const voiceRoutes: FastifyPluginAsync = async (fastify) => {
             .limit(1);
 
           if (!enrollment) {
-            socket.send(
+            ws.send(
               JSON.stringify({
                 type: "end",
                 handoffData: JSON.stringify({ error: "enrollment_not_found" }),
@@ -359,7 +363,7 @@ export const voiceRoutes: FastifyPluginAsync = async (fastify) => {
               session,
               "system: No cards are due right now. Greet the user and let them know they're all caught up, then end the session.",
             );
-            socket.send(
+            ws.send(
               JSON.stringify({
                 type: "end",
                 handoffData: JSON.stringify({ reason: "no_cards_due" }),
@@ -420,7 +424,7 @@ export const voiceRoutes: FastifyPluginAsync = async (fastify) => {
             lowerReply.includes("good luck with your studies");
 
           if (isComplete || session.currentIndex >= session.cards.length) {
-            socket.send(
+            ws.send(
               JSON.stringify({
                 type: "end",
                 handoffData: JSON.stringify({
@@ -482,7 +486,7 @@ export const voiceRoutes: FastifyPluginAsync = async (fastify) => {
       }
     });
 
-    socket.on("close", () => {
+    ws.on("close", () => {
       if (session) {
         fastify.log.info({ callSid: session.callSid }, "WS: session closed");
         activeSessions.delete(session.callSid);
@@ -490,7 +494,7 @@ export const voiceRoutes: FastifyPluginAsync = async (fastify) => {
       }
     });
 
-    socket.on("error", (err: Error) => {
+    ws.on("error", (err: Error) => {
       fastify.log.error({ err }, "WS: socket error");
       if (session) activeSessions.delete(session.callSid);
     });

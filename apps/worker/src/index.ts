@@ -485,53 +485,231 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
         }
       }
 
-      // Combine all source content
-      const combinedContent = sources
-        .filter((s) => s.content)
-        .map((s) => `--- Source: ${s.name} ---\n\n${s.content}`)
-        .join("\n\n");
+      // Process each source separately to extract ALL questions, then merge.
+      // This avoids Claude condensing/summarizing when given too much at once.
+      const sourcesWithContent = sources.filter((s) => s.content);
 
-      if (!combinedContent.trim()) {
+      if (sourcesWithContent.length === 0) {
         throw new Error("No content could be extracted from sources");
       }
 
-      job.log(`Combined content length: ${combinedContent.length} characters`);
+      const allSourceResults: GeneratedCourse[] = [];
 
-      // Call Claude to generate course structure
-      const message = await anthropic.messages.create({
+      for (const source of sourcesWithContent) {
+        job.log(`Processing source: ${source.name} (${source.content!.length} chars)`);
+
+        // Use streaming to avoid 10-minute timeout on large PDFs
+        const stream = anthropic.messages.stream({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 64000,
+          system: CONTENT_PROCESSING_SYSTEM_PROMPT,
+          messages: [
+            {
+              role: "user",
+              content: `Here is the study material to process. Extract EVERY question — do not skip or summarize. If this is a practice exam, extract ALL questions with their exact options and correct answers.\n\n${source.content}`,
+            },
+          ],
+        });
+
+        const message = await stream.finalMessage();
+
+        const textBlock = message.content.find((b) => b.type === "text");
+        if (!textBlock || textBlock.type !== "text") {
+          job.log(`No text response for source: ${source.name}`);
+          continue;
+        }
+
+        // Extract JSON from response
+        let jsonText = textBlock.text.trim();
+
+        const fenceMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+        if (fenceMatch) {
+          jsonText = fenceMatch[1]!.trim();
+        }
+
+        if (!jsonText.startsWith("{")) {
+          const firstBrace = jsonText.indexOf("{");
+          const lastBrace = jsonText.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1) {
+            jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+          }
+        }
+
+        try {
+          const parsed = JSON.parse(jsonText) as GeneratedCourse;
+          const cardCount = parsed.modules?.reduce((s, m) => s + m.cards.length, 0) ?? 0;
+          job.log(
+            `Source "${source.name}": ${parsed.modules?.length ?? 0} modules, ${cardCount} cards`,
+          );
+          allSourceResults.push(parsed);
+        } catch (parseErr) {
+          job.log(`Failed to parse JSON for source ${source.name}: ${String(parseErr)}`);
+        }
+      }
+
+      if (allSourceResults.length === 0) {
+        throw new Error("No valid results from any source");
+      }
+
+      // Step 1: Collect all unique cards across all sources (flat, deduplicated)
+      const first = allSourceResults[0]!;
+      const allCards: GeneratedCourse["modules"][0]["cards"] = [];
+      const seenQuestions = new Set<string>();
+
+      for (const result of allSourceResults) {
+        for (const mod of result.modules ?? []) {
+          for (const card of mod.cards) {
+            const normalizedFront = card.front
+              .toLowerCase()
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 100);
+            if (!seenQuestions.has(normalizedFront)) {
+              seenQuestions.add(normalizedFront);
+              allCards.push(card);
+            }
+          }
+        }
+      }
+
+      job.log(
+        `Collected ${allCards.length} unique cards from ${allSourceResults.length} sources. Organizing into domains...`,
+      );
+
+      // Step 2: Use AI to organize cards into proper domain modules.
+      // Send just the question text (not full card data) to classify each card
+      // into the right domain, then rebuild the structure.
+      const cardSummaries = allCards.map((c, i) => `[${i}] ${c.front.slice(0, 150)}`).join("\n");
+
+      const organizeStream = anthropic.messages.stream({
         model: "claude-sonnet-4-20250514",
         max_tokens: 16384,
-        system: CONTENT_PROCESSING_SYSTEM_PROMPT,
+        system: `You are organizing study questions into domain modules for a course.
+
+Given a list of questions (each with an index number), assign each question to the most appropriate domain module. The modules should reflect the actual subject structure — for certification exams, use the official exam domains. For other topics, create 3-8 logical groupings.
+
+For example, CompTIA Security+ SY0-701 has these domains:
+- Domain 1.0 - General Security Concepts (12%)
+- Domain 2.0 - Threats, Vulnerabilities, and Mitigations (22%)
+- Domain 3.0 - Security Architecture (18%)
+- Domain 4.0 - Security Operations (28%)
+- Domain 5.0 - Security Program Management and Oversight (20%)
+
+Respond with ONLY valid JSON:
+{
+  "title": "string — course title",
+  "description": "string — 1-2 sentence summary",
+  "category": "string",
+  "difficulty": "beginner" | "intermediate" | "advanced",
+  "modules": [
+    {
+      "title": "string — domain/module name",
+      "description": "string",
+      "position": 1,
+      "cardIndices": [0, 1, 5, 12, ...]
+    }
+  ]
+}
+
+Every question index must appear in exactly one module. Do not skip any indices.`,
         messages: [
           {
             role: "user",
-            content: `Here is the study material to process:\n\n${combinedContent}`,
+            content: `Organize these ${allCards.length} questions into domain modules:\n\n${cardSummaries}`,
           },
         ],
       });
 
-      // Extract text response
-      const textBlock = message.content.find((b) => b.type === "text");
-      if (!textBlock || textBlock.type !== "text") {
-        throw new Error("No text response from AI");
-      }
+      const organizeMessage = await organizeStream.finalMessage();
+      const organizeBlock = organizeMessage.content.find((b) => b.type === "text");
 
-      // Parse JSON — handle markdown code fences if present
-      let jsonText = textBlock.text.trim();
-      if (jsonText.startsWith("```")) {
-        jsonText = jsonText.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
-      }
+      let generated: GeneratedCourse;
 
-      const generated = JSON.parse(jsonText) as GeneratedCourse;
+      if (organizeBlock && organizeBlock.type === "text") {
+        let orgJson = organizeBlock.text.trim();
+        const orgFence = orgJson.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+        if (orgFence) orgJson = orgFence[1]!.trim();
+        if (!orgJson.startsWith("{")) {
+          const fb = orgJson.indexOf("{");
+          const lb = orgJson.lastIndexOf("}");
+          if (fb !== -1 && lb !== -1) orgJson = orgJson.slice(fb, lb + 1);
+        }
 
-      // Validate basic structure
-      if (!generated.title || !generated.modules?.length) {
-        throw new Error("AI response missing required fields (title, modules)");
+        try {
+          const organization = JSON.parse(orgJson) as {
+            title: string;
+            description: string;
+            category: string;
+            difficulty: "beginner" | "intermediate" | "advanced";
+            modules: {
+              title: string;
+              description: string;
+              position: number;
+              cardIndices: number[];
+            }[];
+          };
+
+          // Rebuild modules with actual card data
+          generated = {
+            title: organization.title || first.title,
+            description: organization.description || first.description,
+            category: organization.category || first.category,
+            difficulty: organization.difficulty || first.difficulty,
+            modules: organization.modules.map((mod) => ({
+              title: mod.title,
+              description: mod.description,
+              position: mod.position,
+              cards: mod.cardIndices
+                .filter((i) => i >= 0 && i < allCards.length)
+                .map((i) => allCards[i]!),
+            })),
+          };
+
+          // Assign any unassigned cards to the last module (typically the broadest)
+          const assignedIndices = new Set(organization.modules.flatMap((m) => m.cardIndices));
+          const unassigned = allCards.filter((_, i) => !assignedIndices.has(i));
+          if (unassigned.length > 0 && generated.modules.length > 0) {
+            const lastModule = generated.modules[generated.modules.length - 1]!;
+            lastModule.cards.push(...unassigned);
+            job.log(`${unassigned.length} unassigned cards added to "${lastModule.title}"`);
+          }
+        } catch {
+          job.log("Failed to parse organization response, falling back to flat merge");
+          generated = {
+            title: first.title,
+            description: first.description,
+            category: first.category,
+            difficulty: first.difficulty,
+            modules: [
+              {
+                title: "All Questions",
+                description: "All extracted questions",
+                position: 1,
+                cards: allCards,
+              },
+            ],
+          };
+        }
+      } else {
+        generated = {
+          title: first.title,
+          description: first.description,
+          category: first.category,
+          difficulty: first.difficulty,
+          modules: [
+            {
+              title: "All Questions",
+              description: "All extracted questions",
+              position: 1,
+              cards: allCards,
+            },
+          ],
+        };
       }
 
       const totalCards = generated.modules.reduce((sum, m) => sum + m.cards.length, 0);
       job.log(
-        `Generated: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards`,
+        `Organized: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards (${seenQuestions.size} unique, from ${allSourceResults.length} sources)`,
       );
 
       // Store result and mark as ready for review
