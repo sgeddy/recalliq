@@ -25,7 +25,7 @@ import {
   users,
 } from "@recalliq/db";
 
-import type { GeneratedCourse } from "@recalliq/types";
+import type { GeneratedCourse, GeneratedModule } from "@recalliq/types";
 
 import {
   REVIEW_NOTIFICATION_QUEUE,
@@ -485,65 +485,116 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
         }
       }
 
-      // Combine all source content
-      const combinedContent = sources
-        .filter((s) => s.content)
-        .map((s) => `--- Source: ${s.name} ---\n\n${s.content}`)
-        .join("\n\n");
+      // Process each source separately to extract ALL questions, then merge.
+      // This avoids Claude condensing/summarizing when given too much at once.
+      const sourcesWithContent = sources.filter((s) => s.content);
 
-      if (!combinedContent.trim()) {
+      if (sourcesWithContent.length === 0) {
         throw new Error("No content could be extracted from sources");
       }
 
-      job.log(`Combined content length: ${combinedContent.length} characters`);
+      const allSourceResults: GeneratedCourse[] = [];
 
-      // Call Claude to generate course structure
-      const message = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 16384,
-        system: CONTENT_PROCESSING_SYSTEM_PROMPT,
-        messages: [
-          {
-            role: "user",
-            content: `Here is the study material to process:\n\n${combinedContent}`,
-          },
-        ],
-      });
+      for (const source of sourcesWithContent) {
+        job.log(`Processing source: ${source.name} (${source.content!.length} chars)`);
 
-      // Extract text response
-      const textBlock = message.content.find((b) => b.type === "text");
-      if (!textBlock || textBlock.type !== "text") {
-        throw new Error("No text response from AI");
-      }
+        const message = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 64000,
+          system: CONTENT_PROCESSING_SYSTEM_PROMPT,
+          messages: [
+            {
+              role: "user",
+              content: `Here is the study material to process. Extract EVERY question — do not skip or summarize. If this is a practice exam, extract ALL questions with their exact options and correct answers.\n\n${source.content}`,
+            },
+          ],
+        });
 
-      // Extract JSON from response — handle preamble text, markdown fences, etc.
-      let jsonText = textBlock.text.trim();
+        const textBlock = message.content.find((b) => b.type === "text");
+        if (!textBlock || textBlock.type !== "text") {
+          job.log(`No text response for source: ${source.name}`);
+          continue;
+        }
 
-      // Strip markdown code fences
-      const fenceMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-      if (fenceMatch) {
-        jsonText = fenceMatch[1]!.trim();
-      }
+        // Extract JSON from response
+        let jsonText = textBlock.text.trim();
 
-      // If response starts with non-JSON text, find the first { and last }
-      if (!jsonText.startsWith("{")) {
-        const firstBrace = jsonText.indexOf("{");
-        const lastBrace = jsonText.lastIndexOf("}");
-        if (firstBrace !== -1 && lastBrace !== -1) {
-          jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+        const fenceMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+        if (fenceMatch) {
+          jsonText = fenceMatch[1]!.trim();
+        }
+
+        if (!jsonText.startsWith("{")) {
+          const firstBrace = jsonText.indexOf("{");
+          const lastBrace = jsonText.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1) {
+            jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+          }
+        }
+
+        try {
+          const parsed = JSON.parse(jsonText) as GeneratedCourse;
+          const cardCount = parsed.modules?.reduce((s, m) => s + m.cards.length, 0) ?? 0;
+          job.log(
+            `Source "${source.name}": ${parsed.modules?.length ?? 0} modules, ${cardCount} cards`,
+          );
+          allSourceResults.push(parsed);
+        } catch (parseErr) {
+          job.log(`Failed to parse JSON for source ${source.name}: ${String(parseErr)}`);
         }
       }
 
-      const generated = JSON.parse(jsonText) as GeneratedCourse;
-
-      // Validate basic structure
-      if (!generated.title || !generated.modules?.length) {
-        throw new Error("AI response missing required fields (title, modules)");
+      if (allSourceResults.length === 0) {
+        throw new Error("No valid results from any source");
       }
+
+      // Merge all source results into one course.
+      // Use the first result's metadata, merge all modules, deduplicate by question text.
+      const first = allSourceResults[0]!;
+      const generated: GeneratedCourse = {
+        title: first.title,
+        description: first.description,
+        category: first.category,
+        difficulty: first.difficulty,
+        modules: [],
+      };
+
+      // Collect all cards across all sources, grouped by module title
+      const moduleMap = new Map<string, GeneratedModule>();
+      const seenQuestions = new Set<string>();
+
+      for (const result of allSourceResults) {
+        for (const mod of result.modules ?? []) {
+          const key = mod.title.toLowerCase().trim();
+          if (!moduleMap.has(key)) {
+            moduleMap.set(key, {
+              title: mod.title,
+              description: mod.description,
+              position: moduleMap.size + 1,
+              cards: [],
+            });
+          }
+          const merged = moduleMap.get(key)!;
+          for (const card of mod.cards) {
+            // Deduplicate by normalized question text (first 100 chars)
+            const normalizedFront = card.front
+              .toLowerCase()
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 100);
+            if (!seenQuestions.has(normalizedFront)) {
+              seenQuestions.add(normalizedFront);
+              merged.cards.push(card);
+            }
+          }
+        }
+      }
+
+      generated.modules = Array.from(moduleMap.values());
 
       const totalCards = generated.modules.reduce((sum, m) => sum + m.cards.length, 0);
       job.log(
-        `Generated: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards`,
+        `Merged: "${generated.title}" — ${generated.modules.length} modules, ${totalCards} cards (${seenQuestions.size} unique, from ${allSourceResults.length} sources)`,
       );
 
       // Store result and mark as ready for review
