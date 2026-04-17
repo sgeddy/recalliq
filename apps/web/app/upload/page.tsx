@@ -87,6 +87,7 @@ export default function UploadPage() {
 
     try {
       const token = await getToken();
+      console.log("[upload] token obtained:", !!token);
       if (!token) throw new Error("Not authenticated");
 
       // Send files and URLs together in one multipart request
@@ -98,20 +99,30 @@ export default function UploadPage() {
         formData.append("url", url);
       }
 
+      console.log(
+        "[upload] POST %s/uploads — files: %d, urls: %d",
+        API_URL,
+        files.length,
+        urls.length,
+      );
       const res = await fetch(`${API_URL}/uploads`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
+      console.log("[upload] response status:", res.status);
       if (!res.ok) {
         const body = await res.json().catch(() => null);
+        console.error("[upload] error body:", body);
         throw new Error(body?.message ?? `Upload failed: ${res.status}`);
       }
 
       const { data } = (await res.json()) as { data: { uploadId: string } };
+      console.log("[upload] success — uploadId:", data.uploadId);
       router.push(`/upload/${data.uploadId}`);
     } catch (err) {
+      console.error("[upload] failed:", err);
       setError(err instanceof Error ? err.message : "Upload failed");
       setIsUploading(false);
     }

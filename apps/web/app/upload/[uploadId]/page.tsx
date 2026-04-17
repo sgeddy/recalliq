@@ -35,22 +35,31 @@ export default function UploadReviewPage() {
   const fetchUpload = useCallback(async () => {
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token) {
+        console.warn("[poll] no token");
+        return;
+      }
 
+      console.log("[poll] GET %s/uploads/%s", API_URL, uploadId);
       const res = await fetch(`${API_URL}/uploads/${uploadId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      console.log("[poll] status:", res.status);
       if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        console.error("[poll] error:", res.status, body);
         setError("Failed to load upload");
         setIsLoading(false);
         return;
       }
 
       const { data } = (await res.json()) as { data: UploadData };
+      console.log("[poll] upload status: %s, title: %s", data.status, data.title);
       setUpload(data);
       setIsLoading(false);
-    } catch {
+    } catch (err) {
+      console.error("[poll] failed:", err);
       setError("Failed to load upload");
       setIsLoading(false);
     }
