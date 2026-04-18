@@ -19,6 +19,8 @@ RUN pnpm install --frozen-lockfile
 
 # Build all packages and apps
 FROM deps AS builder
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
 RUN pnpm build
 

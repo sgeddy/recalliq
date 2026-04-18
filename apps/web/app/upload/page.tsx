@@ -31,6 +31,9 @@ export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [urls, setUrls] = useState<string[]>([]);
   const [urlInput, setUrlInput] = useState("");
+  const [contentType, setContentType] = useState<"practice_exam" | "study_guide" | "mixed">(
+    "practice_exam",
+  );
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -87,10 +90,12 @@ export default function UploadPage() {
 
     try {
       const token = await getToken();
+      console.log("[upload] token obtained:", !!token);
       if (!token) throw new Error("Not authenticated");
 
       // Send files and URLs together in one multipart request
       const formData = new FormData();
+      formData.append("contentType", contentType);
       for (const file of files) {
         formData.append("file", file);
       }
@@ -98,20 +103,30 @@ export default function UploadPage() {
         formData.append("url", url);
       }
 
+      console.log(
+        "[upload] POST %s/uploads — files: %d, urls: %d",
+        API_URL,
+        files.length,
+        urls.length,
+      );
       const res = await fetch(`${API_URL}/uploads`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
+      console.log("[upload] response status:", res.status);
       if (!res.ok) {
         const body = await res.json().catch(() => null);
+        console.error("[upload] error body:", body);
         throw new Error(body?.message ?? `Upload failed: ${res.status}`);
       }
 
       const { data } = (await res.json()) as { data: { uploadId: string } };
+      console.log("[upload] success — uploadId:", data.uploadId);
       router.push(`/upload/${data.uploadId}`);
     } catch (err) {
+      console.error("[upload] failed:", err);
       setError(err instanceof Error ? err.message : "Upload failed");
       setIsUploading(false);
     }
@@ -245,6 +260,43 @@ export default function UploadPage() {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Content type */}
+      <div className="mb-6">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+          Content Type
+        </h2>
+        <div className="grid grid-cols-3 gap-2">
+          {(
+            [
+              { value: "practice_exam", label: "Practice Exam", desc: "Questions with answers" },
+              { value: "study_guide", label: "Study Guide", desc: "Notes, outlines, concepts" },
+              { value: "mixed", label: "Mixed", desc: "Both questions and notes" },
+            ] as const
+          ).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setContentType(opt.value)}
+              className={[
+                "rounded-lg border px-3 py-3 text-left transition-colors",
+                contentType === opt.value
+                  ? "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500"
+                  : "border-gray-200 bg-white hover:border-gray-300",
+              ].join(" ")}
+            >
+              <p className="text-sm font-medium text-gray-900">{opt.label}</p>
+              <p className="text-xs text-gray-500">{opt.desc}</p>
+            </button>
+          ))}
+        </div>
+        {contentType !== "practice_exam" && (
+          <p className="mt-2 text-xs text-amber-600">
+            Study guides use a more powerful AI model to generate questions from your content. This
+            takes longer (2-5 minutes) but produces higher quality results.
+          </p>
         )}
       </div>
 

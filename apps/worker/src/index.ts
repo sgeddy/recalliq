@@ -433,11 +433,23 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
 
     job.log(`Processing content for upload ${uploadId}`);
 
-    // Mark as processing
+    // Fetch upload record for contentType, then mark as processing
+    const [uploadRecord] = await db
+      .select({ contentType: uploads.contentType })
+      .from(uploads)
+      .where(eq(uploads.id, uploadId))
+      .limit(1);
+
+    const contentType = uploadRecord?.contentType ?? "practice_exam";
+    const extractionModel =
+      contentType === "practice_exam" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-20250514";
+
     await db
       .update(uploads)
       .set({ status: "processing", updatedAt: new Date() })
       .where(eq(uploads.id, uploadId));
+
+    job.log(`Content type: ${contentType}, extraction model: ${extractionModel}`);
 
     try {
       // Fetch all sources for this upload
@@ -495,18 +507,80 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
 
       const allSourceResults: GeneratedCourse[] = [];
 
-      for (const source of sourcesWithContent) {
-        job.log(`Processing source: ${source.name} (${source.content!.length} chars)`);
+      // Large documents get chunked to avoid hitting output token limits.
+      // 288 MCQ questions as JSON ≈ 70-85k output tokens, but max_tokens caps at 64k.
+      // Splitting at ~100k chars ensures each chunk produces ≤ 64k tokens of output.
+      const MAX_CHUNK_CHARS = 100_000;
 
-        // Use streaming to avoid 10-minute timeout on large PDFs
+      function splitIntoChunks(text: string): string[] {
+        if (text.length <= MAX_CHUNK_CHARS) return [text];
+
+        const chunks: string[] = [];
+        let start = 0;
+        while (start < text.length) {
+          let end = Math.min(start + MAX_CHUNK_CHARS, text.length);
+          // Try to break at a double newline to avoid splitting a question
+          if (end < text.length) {
+            const breakPoint = text.lastIndexOf("\n\n", end);
+            if (breakPoint > start + MAX_CHUNK_CHARS * 0.5) {
+              end = breakPoint;
+            }
+          }
+          chunks.push(text.slice(start, end));
+          start = end;
+        }
+        return chunks;
+      }
+
+      function parseJsonFromResponse(text: string): string {
+        let jsonText = text.trim();
+        const fenceMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+        if (fenceMatch) jsonText = fenceMatch[1]!.trim();
+        if (!jsonText.startsWith("{")) {
+          const firstBrace = jsonText.indexOf("{");
+          const lastBrace = jsonText.lastIndexOf("}");
+          if (firstBrace !== -1 && lastBrace !== -1) {
+            jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+          }
+        }
+        return jsonText;
+      }
+
+      // Process all chunks from all sources, running up to MAX_PARALLEL at once.
+      const MAX_PARALLEL = 3;
+
+      interface ChunkTask {
+        sourceName: string;
+        chunk: string;
+        label: string;
+      }
+
+      const chunkTasks: ChunkTask[] = [];
+      for (const source of sourcesWithContent) {
+        const content = source.content!;
+        const chunks = splitIntoChunks(content);
+        job.log(
+          `Processing source: ${source.name} (${content.length} chars, ${chunks.length} chunk${chunks.length !== 1 ? "s" : ""})`,
+        );
+        for (let ci = 0; ci < chunks.length; ci++) {
+          const label = chunks.length > 1 ? ` (chunk ${ci + 1}/${chunks.length})` : "";
+          chunkTasks.push({ sourceName: source.name, chunk: chunks[ci]!, label });
+        }
+      }
+
+      async function processChunk(task: ChunkTask): Promise<GeneratedCourse | null> {
+        job.log(
+          `Extracting questions from ${task.sourceName}${task.label} (${task.chunk.length} chars)`,
+        );
+
         const stream = anthropic.messages.stream({
-          model: "claude-sonnet-4-20250514",
+          model: extractionModel,
           max_tokens: 64000,
           system: CONTENT_PROCESSING_SYSTEM_PROMPT,
           messages: [
             {
               role: "user",
-              content: `Here is the study material to process. Extract EVERY question — do not skip or summarize. If this is a practice exam, extract ALL questions with their exact options and correct answers.\n\n${source.content}`,
+              content: `Here is the study material to process. Extract EVERY question — do not skip or summarize. If this is a practice exam, extract ALL questions with their exact options and correct answers.\n\n${task.chunk}`,
             },
           ],
         });
@@ -515,35 +589,37 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
 
         const textBlock = message.content.find((b) => b.type === "text");
         if (!textBlock || textBlock.type !== "text") {
-          job.log(`No text response for source: ${source.name}`);
-          continue;
+          job.log(`No text response for ${task.sourceName}${task.label}`);
+          return null;
         }
 
-        // Extract JSON from response
-        let jsonText = textBlock.text.trim();
-
-        const fenceMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-        if (fenceMatch) {
-          jsonText = fenceMatch[1]!.trim();
+        if (message.stop_reason === "max_tokens") {
+          job.log(
+            `WARNING: output truncated for ${task.sourceName}${task.label} — some questions may be missing`,
+          );
         }
 
-        if (!jsonText.startsWith("{")) {
-          const firstBrace = jsonText.indexOf("{");
-          const lastBrace = jsonText.lastIndexOf("}");
-          if (firstBrace !== -1 && lastBrace !== -1) {
-            jsonText = jsonText.slice(firstBrace, lastBrace + 1);
-          }
-        }
+        const jsonText = parseJsonFromResponse(textBlock.text);
 
         try {
           const parsed = JSON.parse(jsonText) as GeneratedCourse;
           const cardCount = parsed.modules?.reduce((s, m) => s + m.cards.length, 0) ?? 0;
           job.log(
-            `Source "${source.name}": ${parsed.modules?.length ?? 0} modules, ${cardCount} cards`,
+            `${task.sourceName}${task.label}: ${parsed.modules?.length ?? 0} modules, ${cardCount} cards`,
           );
-          allSourceResults.push(parsed);
+          return parsed;
         } catch (parseErr) {
-          job.log(`Failed to parse JSON for source ${source.name}: ${String(parseErr)}`);
+          job.log(`Failed to parse JSON for ${task.sourceName}${task.label}: ${String(parseErr)}`);
+          return null;
+        }
+      }
+
+      // Run chunks in batches of MAX_PARALLEL
+      for (let i = 0; i < chunkTasks.length; i += MAX_PARALLEL) {
+        const batch = chunkTasks.slice(i, i + MAX_PARALLEL);
+        const results = await Promise.all(batch.map(processChunk));
+        for (const result of results) {
+          if (result) allSourceResults.push(result);
         }
       }
 
@@ -582,7 +658,7 @@ const contentProcessingWorker = new Worker<ContentProcessingJobData>(
       const cardSummaries = allCards.map((c, i) => `[${i}] ${c.front.slice(0, 150)}`).join("\n");
 
       const organizeStream = anthropic.messages.stream({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 16384,
         system: `You are organizing study questions into domain modules for a course.
 

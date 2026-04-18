@@ -16,7 +16,9 @@
     "@anthropic-ai/sdk": "^0.82.0",
     "@clerk/fastify": "^1.0.0",
     "@fastify/cors": "^9.0.0",
+    "@fastify/helmet": "11",
     "@fastify/multipart": "8",
+    "@fastify/rate-limit": "9",
     "@fastify/websocket": "^8.3.1",
     "@recalliq/db": "workspace:*",
     "@recalliq/srs-engine": "workspace:*",
@@ -31,6 +33,7 @@
     "pdf-parse": "^2.4.5",
     "pg": "^8.11.5",
     "pino-pretty": "^11.0.0",
+    "svix": "1",
     "twilio": "^5.0.0",
     "zod": "^3.22.4"
   },
