@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 
 import { validateAccessCode } from "./actions";
 
@@ -8,8 +9,21 @@ type GateState = { valid: boolean; error?: string };
 
 const INITIAL_STATE: GateState = { valid: false };
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+    >
+      {pending ? "Verifying…" : "Continue"}
+    </button>
+  );
+}
+
 export function AccessCodeGate({ children }: { children: ReactNode }) {
-  const [state, formAction, isPending] = useActionState(validateAccessCode, INITIAL_STATE);
+  const [state, formAction] = useFormState(validateAccessCode, INITIAL_STATE);
 
   if (state.valid) {
     return <>{children}</>;
@@ -44,13 +58,7 @@ export function AccessCodeGate({ children }: { children: ReactNode }) {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {isPending ? "Verifying…" : "Continue"}
-          </button>
+          <SubmitButton />
         </form>
       </div>
     </div>
