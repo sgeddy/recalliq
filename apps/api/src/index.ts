@@ -1,10 +1,14 @@
 import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
+import rateLimit from "@fastify/rate-limit";
 import websocketPlugin from "@fastify/websocket";
 import Fastify from "fastify";
 
+import { validateEnv } from "./env.js";
 import { extractUserId } from "./plugins/clerk-auth.js";
 import zodValidatorPlugin from "./plugins/zod-validator.js";
 import { authRoutes } from "./routes/auth.js";
+import { clerkWebhookRoutes } from "./routes/clerk-webhooks.js";
 import { courseRoutes } from "./routes/courses.js";
 import { enrollmentRoutes } from "./routes/enrollments.js";
 import { healthRoutes } from "./routes/health.js";
@@ -19,6 +23,7 @@ const IS_PRODUCTION = process.env["NODE_ENV"] === "production";
 
 async function buildServer() {
   const fastify = Fastify({
+    trustProxy: true,
     logger: {
       level: IS_PRODUCTION ? "info" : "debug",
       ...(IS_PRODUCTION
@@ -41,6 +46,18 @@ async function buildServer() {
     credentials: true,
   });
 
+  // Security headers
+  await fastify.register(helmet, {
+    contentSecurityPolicy: false, // Caddy/Next.js handles CSP
+  });
+
+  // Rate limiting — stricter on auth endpoints, generous globally
+  await fastify.register(rateLimit, {
+    max: 100,
+    timeWindow: "1 minute",
+    allowList: [],
+  });
+
   // Global error handler + Zod validation helpers
   await fastify.register(zodValidatorPlugin);
 
@@ -53,6 +70,7 @@ async function buildServer() {
   // Routes
   await fastify.register(healthRoutes);
   await fastify.register(authRoutes);
+  await fastify.register(clerkWebhookRoutes);
   await fastify.register(courseRoutes);
   await fastify.register(enrollmentRoutes);
   await fastify.register(mockExamRoutes);
@@ -64,6 +82,7 @@ async function buildServer() {
 }
 
 async function start(): Promise<void> {
+  validateEnv();
   const server = await buildServer();
 
   try {

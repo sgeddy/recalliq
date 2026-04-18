@@ -13,11 +13,22 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
   // TODO(team): Wire up Clerk webhook to sync user creation to the DB (#15)
   // User creation is handled by Clerk; this endpoint is a placeholder for
   // any post-registration logic (e.g. creating a Stripe customer).
-  fastify.post("/auth/register", async (request, reply) => {
-    parseBody(request, registerBodySchema);
+  fastify.post(
+    "/auth/register",
+    {
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: "1 minute",
+        },
+      },
+    },
+    async (request, reply) => {
+      parseBody(request, registerBodySchema);
 
-    await reply.status(201).send({
-      message: "Registration is handled via Clerk. This endpoint is a stub.",
-    });
-  });
+      await reply.status(201).send({
+        message: "Registration is handled via Clerk. This endpoint is a stub.",
+      });
+    },
+  );
 };

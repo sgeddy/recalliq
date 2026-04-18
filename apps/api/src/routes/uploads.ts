@@ -155,145 +155,156 @@ export const uploadRoutes: FastifyPluginAsync = async (fastify) => {
   });
 
   // ── POST /uploads ─── Create upload and attach files ──────────────────────
-  fastify.post("/uploads", { preHandler: [requireAuth] }, async (request, reply) => {
-    const clerkId = request.userId as string;
+  fastify.post(
+    "/uploads",
+    {
+      preHandler: [requireAuth],
+      config: { rateLimit: { max: 10, timeWindow: "1 minute" } },
+    },
+    async (request, reply) => {
+      const clerkId = request.userId as string;
 
-    // Upsert user
-    const { email: clerkEmail, name: clerkName } = await fetchClerkEmail(clerkId);
-    const existingUsers = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
+      // Upsert user
+      const { email: clerkEmail, name: clerkName } = await fetchClerkEmail(clerkId);
+      const existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.clerkId, clerkId))
+        .limit(1);
 
-    let user = existingUsers[0];
+      let user = existingUsers[0];
 
-    if (!user) {
-      const inserted = await db
-        .insert(users)
-        .values({ clerkId, email: clerkEmail, name: clerkName })
-        .returning();
-      user = inserted[0]!;
-    }
-
-    // Parse multipart — collect files and field values
-    const parts = request.parts();
-    const fileSources: { name: string; mimeType: string; content: string }[] = [];
-    const urlSources: string[] = [];
-    let title: string | null = null;
-    let contentType = "practice_exam";
-
-    for await (const part of parts) {
-      if (part.type === "field") {
-        const val = typeof part.value === "string" ? part.value.trim() : "";
-        if (part.fieldname === "title" && val) {
-          title = val.slice(0, MAX_TITLE_LENGTH);
-        }
-        if (
-          part.fieldname === "contentType" &&
-          ["practice_exam", "study_guide", "mixed"].includes(val)
-        ) {
-          contentType = val;
-        }
-        if (part.fieldname === "url" && val) {
-          // Validate URL: only http/https, no private IPs
-          try {
-            const parsed = new URL(val);
-            if (parsed.protocol !== "http:" && parsed.protocol !== "https:") continue;
-            const host = parsed.hostname;
-            if (
-              host.startsWith("127.") ||
-              host.startsWith("10.") ||
-              host.startsWith("192.168.") ||
-              host.startsWith("172.") ||
-              host === "localhost" ||
-              host === "0.0.0.0" ||
-              host.endsWith(".local") ||
-              host.endsWith(".internal")
-            ) {
-              continue;
-            }
-            if (val.length <= MAX_URL_LENGTH) {
-              urlSources.push(val);
-            }
-          } catch {
-            // Skip invalid URLs silently
-          }
-        }
-        continue;
+      if (!user) {
+        const inserted = await db
+          .insert(users)
+          .values({ clerkId, email: clerkEmail, name: clerkName })
+          .returning();
+        user = inserted[0]!;
       }
 
-      // part.type === "file" — skip empty file fields (no file selected)
-      if (!part.filename) continue;
+      // Parse multipart — collect files and field values
+      const parts = request.parts();
+      const fileSources: { name: string; mimeType: string; content: string }[] = [];
+      const urlSources: string[] = [];
+      let title: string | null = null;
+      let contentType = "practice_exam";
 
-      if (!ALLOWED_MIME_TYPES.has(part.mimetype)) {
+      for await (const part of parts) {
+        if (part.type === "field") {
+          const val = typeof part.value === "string" ? part.value.trim() : "";
+          if (part.fieldname === "title" && val) {
+            title = val.slice(0, MAX_TITLE_LENGTH);
+          }
+          if (
+            part.fieldname === "contentType" &&
+            ["practice_exam", "study_guide", "mixed"].includes(val)
+          ) {
+            contentType = val;
+          }
+          if (part.fieldname === "url" && val) {
+            // Validate URL: only http/https, no private IPs
+            try {
+              const parsed = new URL(val);
+              if (parsed.protocol !== "http:" && parsed.protocol !== "https:") continue;
+              const host = parsed.hostname;
+              if (
+                host.startsWith("127.") ||
+                host.startsWith("10.") ||
+                host.startsWith("192.168.") ||
+                host.startsWith("172.") ||
+                host === "localhost" ||
+                host === "0.0.0.0" ||
+                host.endsWith(".local") ||
+                host.endsWith(".internal")
+              ) {
+                continue;
+              }
+              if (val.length <= MAX_URL_LENGTH) {
+                urlSources.push(val);
+              }
+            } catch {
+              // Skip invalid URLs silently
+            }
+          }
+          continue;
+        }
+
+        // part.type === "file" — skip empty file fields (no file selected)
+        if (!part.filename) continue;
+
+        if (!ALLOWED_MIME_TYPES.has(part.mimetype)) {
+          throw Object.assign(
+            new Error(`Unsupported file type: ${part.mimetype}. Allowed: PDF, DOCX, TXT, MD`),
+            { statusCode: 400 },
+          );
+        }
+
+        const buffer = await part.toBuffer();
+        if (buffer.length === 0) continue;
+
+        const text = await extractTextFromBuffer(buffer, part.mimetype);
+
+        fileSources.push({
+          name: sanitizeFilename(part.filename),
+          mimeType: part.mimetype,
+          content: text,
+        });
+      }
+
+      const totalSources = fileSources.length + urlSources.length;
+      if (totalSources === 0) {
+        throw Object.assign(new Error("At least one file or URL is required"), {
+          statusCode: 400,
+        });
+      }
+      if (totalSources > MAX_SOURCES_PER_UPLOAD) {
         throw Object.assign(
-          new Error(`Unsupported file type: ${part.mimetype}. Allowed: PDF, DOCX, TXT, MD`),
+          new Error(`Too many sources. Maximum ${MAX_SOURCES_PER_UPLOAD} per upload.`),
           { statusCode: 400 },
         );
       }
 
-      const buffer = await part.toBuffer();
-      if (buffer.length === 0) continue;
+      // Create upload record
+      const [upload] = await db
+        .insert(uploads)
+        .values({
+          userId: user.id,
+          title,
+          contentType,
+          status: "pending",
+        })
+        .returning();
 
-      const text = await extractTextFromBuffer(buffer, part.mimetype);
+      // Insert file sources
+      const sourceInserts = [
+        ...fileSources.map((s) => ({
+          uploadId: upload!.id,
+          sourceType: "file" as const,
+          name: s.name,
+          mimeType: s.mimeType,
+          content: s.content,
+        })),
+        ...urlSources.map((url) => ({
+          uploadId: upload!.id,
+          sourceType: "url" as const,
+          name: url,
+          mimeType: null,
+          content: null,
+        })),
+      ];
 
-      fileSources.push({
-        name: sanitizeFilename(part.filename),
-        mimeType: part.mimetype,
-        content: text,
-      });
-    }
+      await db.insert(uploadSources).values(sourceInserts);
 
-    const totalSources = fileSources.length + urlSources.length;
-    if (totalSources === 0) {
-      throw Object.assign(new Error("At least one file or URL is required"), {
-        statusCode: 400,
-      });
-    }
-    if (totalSources > MAX_SOURCES_PER_UPLOAD) {
-      throw Object.assign(
-        new Error(`Too many sources. Maximum ${MAX_SOURCES_PER_UPLOAD} per upload.`),
-        { statusCode: 400 },
+      // Enqueue processing job
+      await contentProcessingQueue.add(
+        `process-${upload!.id}`,
+        { uploadId: upload!.id },
+        { jobId: `process-${upload!.id}` },
       );
-    }
 
-    // Create upload record
-    const [upload] = await db
-      .insert(uploads)
-      .values({
-        userId: user.id,
-        title,
-        contentType,
-        status: "pending",
-      })
-      .returning();
-
-    // Insert file sources
-    const sourceInserts = [
-      ...fileSources.map((s) => ({
-        uploadId: upload!.id,
-        sourceType: "file" as const,
-        name: s.name,
-        mimeType: s.mimeType,
-        content: s.content,
-      })),
-      ...urlSources.map((url) => ({
-        uploadId: upload!.id,
-        sourceType: "url" as const,
-        name: url,
-        mimeType: null,
-        content: null,
-      })),
-    ];
-
-    await db.insert(uploadSources).values(sourceInserts);
-
-    // Enqueue processing job
-    await contentProcessingQueue.add(
-      `process-${upload!.id}`,
-      { uploadId: upload!.id },
-      { jobId: `process-${upload!.id}` },
-    );
-
-    return reply.status(202).send({ data: { uploadId: upload!.id } });
-  });
+      return reply.status(202).send({ data: { uploadId: upload!.id } });
+    },
+  );
 
   // ── POST /uploads/:id/sources/url ─── Add a URL source to an upload ──────
   fastify.post(

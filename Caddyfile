@@ -1,4 +1,15 @@
 study.samueleddy.com {
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		X-XSS-Protection "0"
+		-Server
+	}
+
 	# API requests — strip /api prefix and proxy to Fastify
 	handle /api/* {
 		uri strip_prefix /api
