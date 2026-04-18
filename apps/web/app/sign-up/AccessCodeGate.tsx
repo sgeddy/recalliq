@@ -1,6 +1,5 @@
 "use client";
 
-import { type ReactNode } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import { validateAccessCode } from "./actions";
@@ -22,12 +21,8 @@ function SubmitButton() {
   );
 }
 
-export function AccessCodeGate({ children }: { children: ReactNode }) {
+export function AccessCodeGate() {
   const [state, formAction] = useFormState(validateAccessCode, INITIAL_STATE);
-
-  if (state.valid) {
-    return <>{children}</>;
-  }
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
