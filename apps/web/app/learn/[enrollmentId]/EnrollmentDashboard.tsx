@@ -125,7 +125,7 @@ type CorrectSortDir = "asc" | "desc" | null;
 
 interface Props extends DashboardData {
   domains: DashboardDomain[];
-  certConfig: CertConfig | null;
+  certConfig: CertConfig;
 }
 
 // ── Stat card ────────────────────────────────────────────────────────────────
@@ -887,32 +887,26 @@ export function EnrollmentDashboard(props: Props) {
 
       {activeTab === "plan" && (
         <div>
-          {certConfig ? (
-            <StudyPlanCalculator
-              certConfig={certConfig}
-              enrollmentId={enrollment.id}
-              {...(enrollment.sessionConfig
-                ? {
-                    initialValues: {
-                      dailyStudyMinutes: enrollment.sessionConfig.dailyStudyMinutes,
-                      weeksUntilExam: enrollment.sessionConfig.weeksUntilExam,
-                      chronotype: enrollment.sessionConfig.chronotype as
-                        | "morning"
-                        | "neutral"
-                        | "evening",
-                      priorKnowledge: enrollment.sessionConfig.priorKnowledge as
-                        | "none"
-                        | "basic"
-                        | "experienced",
-                    },
-                  }
-                : {})}
-            />
-          ) : (
-            <p className="rounded-lg border border-gray-200 bg-white px-5 py-6 text-sm text-gray-500">
-              Study plan is not available for this course.
-            </p>
-          )}
+          <StudyPlanCalculator
+            certConfig={certConfig}
+            enrollmentId={enrollment.id}
+            {...(enrollment.sessionConfig
+              ? {
+                  initialValues: {
+                    dailyStudyMinutes: enrollment.sessionConfig.dailyStudyMinutes,
+                    weeksUntilExam: enrollment.sessionConfig.weeksUntilExam,
+                    chronotype: enrollment.sessionConfig.chronotype as
+                      | "morning"
+                      | "neutral"
+                      | "evening",
+                    priorKnowledge: enrollment.sessionConfig.priorKnowledge as
+                      | "none"
+                      | "basic"
+                      | "experienced",
+                  },
+                }
+              : {})}
+          />
         </div>
       )}
     </div>

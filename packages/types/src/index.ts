@@ -13,7 +13,8 @@ export type {
   IntervalSchedules,
 } from "./cert-config.js";
 
-export { certConfigs, comptiaSecurityPlus } from "./cert-configs/index.js";
+export { certConfigs, comptiaSecurityPlus, buildGenericCertConfig } from "./cert-configs/index.js";
+export type { GenericCertConfigInputs } from "./cert-configs/index.js";
 
 export type CourseStatus = "draft" | "published";
 export type CourseDifficulty = "beginner" | "intermediate" | "advanced";

@@ -8,3 +8,5 @@ export const certConfigs: Record<string, CertConfig> = {
 };
 
 export { comptiaSecurityPlus };
+export { buildGenericCertConfig } from "./generic.js";
+export type { GenericCertConfigInputs } from "./generic.js";

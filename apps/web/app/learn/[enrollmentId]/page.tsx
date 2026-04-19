@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 
-import { certConfigs } from "@recalliq/types";
+import { buildGenericCertConfig, certConfigs } from "@recalliq/types";
 
 import { EnrollmentDashboard } from "./EnrollmentDashboard";
 import type { DashboardData } from "./EnrollmentDashboard";
@@ -54,10 +54,22 @@ export default async function LearnPage({ params }: PageProps) {
 
   // Merge cert domain weights into the domain rows so the client doesn't
   // need to re-import certConfigs (avoids a large bundle inclusion).
-  const certConfig = certConfigs[data.course.slug] ?? null;
+  // User-generated courses fall back to a generic config with equal-weighted
+  // modules so the study plan calculator works for any course.
+  const registeredCertConfig = certConfigs[data.course.slug] ?? null;
+  const certConfig =
+    registeredCertConfig ??
+    buildGenericCertConfig({
+      slug: data.course.slug,
+      title: data.course.title,
+      moduleNames: [...data.domains]
+        .sort((a, b) => a.modulePosition - b.modulePosition)
+        .map((d) => d.moduleName),
+      questionPoolSize: data.stats.totalCards,
+    });
   const domainsWithWeights = data.domains.map((d) => ({
     ...d,
-    weightPercent: certConfig?.domains[d.modulePosition - 1]?.weightPercent ?? null,
+    weightPercent: certConfig.domains[d.modulePosition - 1]?.weightPercent ?? null,
   }));
 
   return <EnrollmentDashboard {...data} domains={domainsWithWeights} certConfig={certConfig} />;
