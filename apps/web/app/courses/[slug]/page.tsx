@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { certConfigs } from "@recalliq/types";
+import { buildGenericCertConfig, certConfigs } from "@recalliq/types";
 
 import { DomainCoverage } from "./DomainCoverage";
 import { EnrollButton } from "./EnrollButton";
@@ -66,7 +66,18 @@ export default async function CourseDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  // Registered cert config drives the official exam overview + compliance UI.
+  // User-generated courses get a generic equal-weighted config that is only
+  // used to feed the study plan calculator.
   const certConfig = certConfigs[course.slug];
+  const planCertConfig =
+    certConfig ??
+    buildGenericCertConfig({
+      slug: course.slug,
+      title: course.title,
+      moduleNames: [...course.modules].sort((a, b) => a.position - b.position).map((m) => m.title),
+      questionPoolSize: course.cardCount,
+    });
 
   // Derive display strings from the structured config
   const passingScoreDisplay = certConfig
@@ -182,11 +193,9 @@ export default async function CourseDetailPage({ params }: PageProps) {
         label={certConfig ? "Domain Coverage" : "Modules"}
       />
 
-      {certConfig && (
-        <section className="mb-10">
-          <StudyPlanCalculator certConfig={certConfig} />
-        </section>
-      )}
+      <section className="mb-10">
+        <StudyPlanCalculator certConfig={planCertConfig} />
+      </section>
 
       <div>
         <EnrollButton courseId={course.id} />
