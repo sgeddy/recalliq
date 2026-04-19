@@ -1,12 +1,41 @@
 "use server";
 
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 const ACCESS_CODE_HASH = process.env["ACCESS_CODE_HASH"] ?? "";
 const COOKIE_NAME = "recalliq_access";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60; // 1 hour
+
+// In-memory per-IP throttle. Fastify rate limiting doesn't cover Next.js
+// server actions, so we guard the access code gate here. Single-instance
+// Next.js container → in-memory is sufficient; revisit if/when we scale out.
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const attemptLog = new Map<string, { count: number; resetAt: number }>();
+
+function clientIp(): string {
+  const h = headers();
+  const forwarded = h.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0]!.trim();
+  return h.get("x-real-ip") ?? "unknown";
+}
+
+function consumeRateLimit(ip: string): { allowed: boolean } {
+  const now = Date.now();
+  for (const [key, entry] of attemptLog) {
+    if (entry.resetAt <= now) attemptLog.delete(key);
+  }
+  const entry = attemptLog.get(ip);
+  if (!entry || entry.resetAt <= now) {
+    attemptLog.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return { allowed: false };
+  entry.count += 1;
+  return { allowed: true };
+}
 
 function signCookieValue(): string {
   return createHmac("sha256", ACCESS_CODE_HASH).update("valid").digest("hex");
@@ -28,6 +57,11 @@ export async function validateAccessCode(
   _prev: { valid: boolean; error?: string },
   formData: FormData,
 ): Promise<{ valid: boolean; error?: string }> {
+  const { allowed } = consumeRateLimit(clientIp());
+  if (!allowed) {
+    return { valid: false, error: "Too many attempts. Please try again in a minute." };
+  }
+
   const code = formData.get("accessCode");
 
   if (!ACCESS_CODE_HASH) {
