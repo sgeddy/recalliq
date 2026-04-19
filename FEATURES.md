@@ -313,6 +313,36 @@ exam_outcomes table:
 
 ---
 
+## FEAT-008: In-Session "Ask a Sub-Question" — User-Generated Dependent Cards
+
+**What:** During a review session, if a question references a concept, acronym, or term the user doesn't know (e.g. "HSM", "TPM"), they can spawn one or more new cards on the spot. Those cards enter the question bank as unattempted and start their own SRS lifecycle. Lets users fill comprehension gaps as they discover them, instead of guessing and moving on.
+
+**Core flow:**
+
+1. While viewing a question (before or after answering), user taps an "Add sub-question" button.
+2. Modal opens with two fields: question prompt + answer. Optional: explanation, domain tag.
+3. On submit, a new card is created in the current course/domain, tagged as user-generated, status = unattempted.
+4. User can add multiple sub-questions from a single parent question (e.g. one card for HSM, another for TPM) — modal supports "Add another" before closing.
+5. New cards appear in the next eligible session following the normal SRS schedule.
+
+**Linkage (optional but nice):**
+
+- Store a `parentCardId` on the sub-card so the user can see "this card was spawned from [original question]" in the card browser
+- Surface a count on the parent: "3 follow-up cards you added"
+
+**DB changes needed:**
+
+- `cards`: add `user_generated BOOLEAN DEFAULT false`, `parent_card_id UUID NULL REFERENCES cards(id)`
+- Reuse `ai_generated` flag from FEAT-005 — this is a different provenance (user, not AI)
+
+**Open questions:**
+
+- Does this apply only to user-owned courses, or also to public/platform courses? (If public, user-added cards should stay private to that user's enrollment — don't pollute the shared bank.)
+- Should these sub-cards count toward the preparedness score (FEAT-002) the same as regular cards, or carry a lower weight until proven durable?
+- Voice quiz equivalent: "add this as a new question" spoken command — defer until voice flow is stable.
+
+---
+
 ## Completed (not in backlog)
 
 - Mock exam sessions — full state machine, domain-weighted questions, scaled scoring, domain breakdown, review mode ✓
