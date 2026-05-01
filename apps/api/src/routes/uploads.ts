@@ -467,6 +467,7 @@ export const uploadRoutes: FastifyPluginAsync = async (fastify) => {
       options: string[] | null;
       correctOptionIndex: number | null;
       correctOptionIndices: number[] | null;
+      acceptableAnswers: string[] | null;
       tags: string[];
     }[] = [];
 
@@ -490,6 +491,7 @@ export const uploadRoutes: FastifyPluginAsync = async (fastify) => {
           options: card.options,
           correctOptionIndex: card.correctOptionIndex,
           correctOptionIndices: card.correctOptionIndices,
+          acceptableAnswers: card.acceptableAnswers ?? null,
           tags: card.tags,
         });
       }

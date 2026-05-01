@@ -63,6 +63,19 @@ function toStartOfDay(date: Date): Date {
   return d;
 }
 
+// Free-recall cards must not leak the model answer or grading keywords until
+// the user submits a response — both fields are stripped before sending.
+interface SessionCardLike {
+  type: string;
+  back: string;
+  acceptableAnswers: string[] | null;
+  [key: string]: unknown;
+}
+function maskFreeRecallAnswer<T extends SessionCardLike>(card: T): T {
+  if (card.type !== "free_recall") return card;
+  return { ...card, back: "", acceptableAnswers: null };
+}
+
 async function fetchClerkEmail(clerkId: string): Promise<{ email: string; name: string | null }> {
   const clerkUser = await clerkClient.users.getUser(clerkId);
   const email = clerkUser.emailAddresses[0]?.emailAddress ?? `${clerkId}@clerk.recalliq.internal`;
@@ -218,10 +231,14 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
           };
           cardMap.set(event.cardId, c);
         }
+        // Track the highest interval the card has reached, including the
+        // pending row scheduled for the next review. After a correct first
+        // pass the original index-0 row is completed and a new index-1 row is
+        // created — the card's "current level" is 1, not 0.
+        if (event.intervalIndex > c.intervalIndex) c.intervalIndex = event.intervalIndex;
         if (event.completedAt !== null) {
           c.attempts++;
           if (event.passed === true) c.correct++;
-          if (event.intervalIndex > c.intervalIndex) c.intervalIndex = event.intervalIndex;
           if (!c.lastReviewedAt || event.completedAt > c.lastReviewedAt) {
             c.lastReviewedAt = event.completedAt;
           }
@@ -535,8 +552,6 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
       .limit(1);
 
     const sessionMinutes = enrollment.sessionConfig?.dailyStudyMinutes ?? 60;
-    // Maximum new cards the picker could ever request (90 min ceiling).
-    const MAX_NEW_CARDS = Math.floor((90 * 60) / 90);
     const sessionCap = Math.floor((sessionMinutes * 60) / 90);
 
     const now = new Date();
@@ -555,6 +570,7 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
         options: cards.options,
         correctOptionIndex: cards.correctOptionIndex,
         correctOptionIndices: cards.correctOptionIndices,
+        acceptableAnswers: cards.acceptableAnswers,
       })
       .from(reviewEvents)
       .innerJoin(cards, eq(cards.id, reviewEvents.cardId))
@@ -570,11 +586,12 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
     const completedDueReviews = shuffledDueReviews.filter((e) => e.completedAt !== null).length;
     const pendingDueReviews = shuffledDueReviews
       .filter((e) => e.completedAt === null)
-      .map(({ completedAt: _c, ...card }) => card);
+      .map(({ completedAt: _c, ...card }) => maskFreeRecallAnswer(card));
 
     // ── New cards (intervalIndex = 0) ─────────────────────────────────────────
-    // Include all (completed + pending) so the seeded shuffle is stable as cards
-    // are completed. The batch is the first sessionCap of the shuffled list.
+    // Return ALL pending new cards. The session picker (client-side) trims to
+    // the user's chosen duration; capping here previously stranded cards whose
+    // shuffle position fell past the cap once the first batch was completed.
     const allNewCardEvents = await db
       .select({
         reviewEventId: reviewEvents.id,
@@ -587,6 +604,7 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
         options: cards.options,
         correctOptionIndex: cards.correctOptionIndex,
         correctOptionIndices: cards.correctOptionIndices,
+        acceptableAnswers: cards.acceptableAnswers,
       })
       .from(reviewEvents)
       .innerJoin(cards, eq(cards.id, reviewEvents.cardId))
@@ -594,15 +612,10 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
 
     // Use a different seed offset for new cards to avoid collisions with due-review shuffle.
     const newCardShuffle = seededShuffle(allNewCardEvents, seedFromUUID(id) ^ 0xdeadbeef);
-
-    // The extended batch covers the maximum the session picker can ever show.
-    // completedNewCards must be counted from this same set so that answers to
-    // any card the client could have shown are reflected in the resume position.
-    const extendedBatch = newCardShuffle.slice(0, MAX_NEW_CARDS);
-    const completedNewCards = extendedBatch.filter((e) => e.completedAt !== null).length;
-    const pendingNewCards = extendedBatch
+    const completedNewCards = newCardShuffle.filter((e) => e.completedAt !== null).length;
+    const pendingNewCards = newCardShuffle
       .filter((e) => e.completedAt === null)
-      .map(({ completedAt: _c, ...card }) => card);
+      .map(({ completedAt: _c, ...card }) => maskFreeRecallAnswer(card));
 
     await reply.status(200).send({
       data: {
@@ -1079,12 +1092,16 @@ export const enrollmentRoutes: FastifyPluginAsync = async (fastify) => {
           };
           cardStatsMap.set(event.cardId, c);
         }
+        // Track the highest interval the card has reached across all events.
+        // A pending index-1 row created after a correct first pass means the
+        // card has graduated to level 1 — counting only completed events
+        // would leave it stuck at 0 between reviews.
+        if (event.intervalIndex > c.currentIntervalIndex) {
+          c.currentIntervalIndex = event.intervalIndex;
+        }
         if (event.completedAt !== null) {
           c.attempts++;
           if (event.passed === true) c.correct++;
-          if (event.intervalIndex > c.currentIntervalIndex) {
-            c.currentIntervalIndex = event.intervalIndex;
-          }
           if (!c.lastReviewedAt || event.completedAt > c.lastReviewedAt) {
             c.lastReviewedAt = event.completedAt;
           }

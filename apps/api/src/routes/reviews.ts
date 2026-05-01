@@ -36,6 +36,59 @@ const submitReviewSchema = z.object({
   responseTime: z.number().int().min(0).optional(),
 });
 
+const gradeAnswerSchema = z.object({
+  answer: z.string().min(1).max(5000),
+});
+
+// Pass threshold: at least this fraction of expected key terms must appear in the
+// learner's answer (case-insensitive substring match) for the auto-grader to
+// suggest "passed". The user can always override.
+const FREE_RECALL_PASS_THRESHOLD = 0.6;
+
+// Match a key term inside the user's answer with simple normalization:
+// case-insensitive, whitespace-collapsed substring containment.
+function normalizeForMatching(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+interface GradingResult {
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  suggestedPassed: boolean;
+  modelAnswer: string;
+}
+
+function gradeFreeRecall(
+  userAnswer: string,
+  acceptableAnswers: string[],
+  modelAnswer: string,
+): GradingResult {
+  const normalizedAnswer = normalizeForMatching(userAnswer);
+  const matchedKeywords: string[] = [];
+  const missingKeywords: string[] = [];
+
+  for (const keyword of acceptableAnswers) {
+    const normalizedKeyword = normalizeForMatching(keyword);
+    if (normalizedKeyword.length === 0) continue;
+    if (normalizedAnswer.includes(normalizedKeyword)) {
+      matchedKeywords.push(keyword);
+    } else {
+      missingKeywords.push(keyword);
+    }
+  }
+
+  const totalKeywords = matchedKeywords.length + missingKeywords.length;
+  const suggestedPassed =
+    totalKeywords > 0 && matchedKeywords.length / totalKeywords >= FREE_RECALL_PASS_THRESHOLD;
+
+  return {
+    matchedKeywords,
+    missingKeywords,
+    suggestedPassed,
+    modelAnswer,
+  };
+}
+
 export const reviewRoutes: FastifyPluginAsync = async (fastify) => {
   // GET /reviews/:id — fetch review event + card for the quiz page
   fastify.get("/reviews/:id", { preHandler: [requireAuth] }, async (request, reply) => {
@@ -92,6 +145,62 @@ export const reviewRoutes: FastifyPluginAsync = async (fastify) => {
         card,
       },
     });
+  });
+
+  // POST /reviews/:id/grade
+  // Grades a free-recall answer without completing the review.
+  // Returns matched/missing keywords + the model answer so the UI can render
+  // feedback. The learner then self-confirms via POST /reviews/:id/submit.
+  fastify.post("/reviews/:id/grade", { preHandler: [requireAuth] }, async (request, reply) => {
+    const { id } = parseParams(request, reviewIdSchema);
+    const { answer } = parseBody(request, gradeAnswerSchema);
+    const clerkId = request.userId as string;
+
+    const [userRow] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.clerkId, clerkId))
+      .limit(1);
+
+    if (!userRow) {
+      throw Object.assign(new Error("User not found"), { statusCode: 404 });
+    }
+
+    const [reviewEvent] = await db
+      .select()
+      .from(reviewEvents)
+      .where(eq(reviewEvents.id, id))
+      .limit(1);
+
+    if (!reviewEvent) {
+      throw Object.assign(new Error("Review event not found"), { statusCode: 404 });
+    }
+
+    const [enrollment] = await db
+      .select({ id: enrollments.id })
+      .from(enrollments)
+      .where(and(eq(enrollments.id, reviewEvent.enrollmentId), eq(enrollments.userId, userRow.id)))
+      .limit(1);
+
+    if (!enrollment) {
+      throw Object.assign(new Error("Review event not found"), { statusCode: 404 });
+    }
+
+    const [card] = await db.select().from(cards).where(eq(cards.id, reviewEvent.cardId)).limit(1);
+
+    if (!card) {
+      throw Object.assign(new Error("Card not found"), { statusCode: 404 });
+    }
+
+    if (card.type !== "free_recall") {
+      throw Object.assign(new Error("Grading is only available for free_recall cards"), {
+        statusCode: 400,
+      });
+    }
+
+    const result = gradeFreeRecall(answer, card.acceptableAnswers ?? [], card.back);
+
+    await reply.status(200).send({ data: result });
   });
 
   // POST /reviews/:id/submit

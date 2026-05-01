@@ -391,9 +391,11 @@ Question generation rules:
 - MCQ questions MUST have exactly 4 options unless the source material specifies more.
 - For "Select TWO" or multi-select questions: set correctOptionIndices to the array of correct indices (0-based), and set correctOptionIndex to null.
 - For single-answer MCQs: set correctOptionIndex to the correct option's index (0-based), and set correctOptionIndices to null.
-- The "back" field is the explanation/answer. For MCQs, explain WHY the correct answer(s) are correct and why the others are wrong.
+- For short-answer or long-answer questions in the source material (questions that ask for a written response, definition, explanation, or list — anything WITHOUT multiple-choice options): emit them as type "free_recall". Set options/correctOptionIndex/correctOptionIndices to null. Put the model answer in "back". Then set "acceptableAnswers" to an array of 3-7 short, distinctive key terms or short phrases (1-4 words each) that a correct answer MUST contain. These are used for keyword-overlap grading, so choose terms that uniquely identify the right concept and avoid generic filler ("the", "system", "is", "and", etc.). Use lowercase. Example: for "Define defense in depth" → ["layered", "multiple controls", "redundancy"].
+- For MCQ and flashcard cards, set acceptableAnswers to null.
+- The "back" field is the explanation/answer. For MCQs, explain WHY the correct answer(s) are correct and why the others are wrong. For free_recall, write a complete model answer the user can compare against.
 - Tags should be lowercase, hyphenated keywords relevant to the card's topic.
-- Generate a mix of card types: mcq (most common), flashcard, and free_recall.
+- Card type selection: prefer mcq for source material that includes options. Use free_recall for source short/long-answer questions or for definition/explain/list-style questions you generate yourself. Use flashcard sparingly (term → definition only).
 - Questions should range from foundational knowledge to applied scenarios.
 - Be thorough — aim for comprehensive coverage, not just surface-level.
 - Generate at least 30 cards total, more if the material covers many topics.
@@ -417,6 +419,7 @@ Respond with ONLY valid JSON matching this schema:
           "options": ["string", ...] | null,
           "correctOptionIndex": number | null,
           "correctOptionIndices": [number, ...] | null,
+          "acceptableAnswers": ["string", ...] | null,
           "tags": ["string", ...]
         }
       ]
