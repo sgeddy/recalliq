@@ -24,9 +24,18 @@ interface Props {
   completedNewCards: number;
 }
 
+interface FreeRecallGrade {
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  suggestedPassed: boolean;
+  modelAnswer: string;
+  userAnswer: string;
+}
+
 type CardState =
   | { phase: "question" }
   | { phase: "revealed" }
+  | { phase: "graded"; grade: FreeRecallGrade }
   | { phase: "result"; passed: boolean; nextScheduledAt: string | null };
 
 async function submitReview(
@@ -50,6 +59,25 @@ async function submitReview(
   return json.data;
 }
 
+async function gradeFreeRecallAnswer(
+  reviewEventId: string,
+  answer: string,
+  authToken: string,
+): Promise<Omit<FreeRecallGrade, "userAnswer">> {
+  const res = await fetch(`${API_URL}/reviews/${reviewEventId}/grade`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ answer }),
+  });
+
+  if (!res.ok) throw new Error(`Grade failed: ${res.status}`);
+  const json = (await res.json()) as { data: Omit<FreeRecallGrade, "userAnswer"> };
+  return json.data;
+}
+
 export function SessionQuiz({
   enrollmentId,
   courseTitle,
@@ -70,6 +98,9 @@ export function SessionQuiz({
   const [submitError, setSubmitError] = useState<string | null>(null);
   // Tracks selected indices for multi-select (Select TWO) questions
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
+  // Free-recall draft text — kept in component state so it survives re-renders
+  // while the user is still typing.
+  const [freeRecallDraft, setFreeRecallDraft] = useState("");
 
   // Derive the active card set from the picker.
   //
@@ -334,6 +365,46 @@ export function SessionQuiz({
     });
   }
 
+  function handleFreeRecallSubmit() {
+    if (cardState.phase !== "question" || isPending) return;
+    const trimmed = freeRecallDraft.trim();
+    if (trimmed.length === 0) return;
+
+    startTransition(async () => {
+      setSubmitError(null);
+      try {
+        const token = await getAuthToken();
+        const grade = await gradeFreeRecallAnswer(card.reviewEventId, trimmed, token);
+        setCardState({
+          phase: "graded",
+          grade: { ...grade, userAnswer: trimmed },
+        });
+      } catch {
+        setSubmitError("Couldn't grade your answer. Please try again.");
+      }
+    });
+  }
+
+  function handleFreeRecallConfirm(passed: boolean) {
+    if (cardState.phase !== "graded" || isPending) return;
+
+    startTransition(async () => {
+      setSubmitError(null);
+      try {
+        const token = await getAuthToken();
+        const result = await submitReview(card.reviewEventId, passed, token);
+        setCardState({
+          phase: "result",
+          passed: result.passed,
+          nextScheduledAt: result.nextScheduledAt,
+        });
+        setResults((prev) => [...prev, { passed: result.passed }]);
+      } catch {
+        setSubmitError("Failed to save your answer. Please try again.");
+      }
+    });
+  }
+
   function handleNext() {
     if (isLastCard) {
       setCardIndex(cards.length);
@@ -341,6 +412,7 @@ export function SessionQuiz({
       setCardIndex((i) => i + 1);
       setCardState({ phase: "question" });
       setSelectedIndices(new Set());
+      setFreeRecallDraft("");
       setSubmitError(null);
     }
   }
@@ -384,7 +456,9 @@ export function SessionQuiz({
               ? card.correctOptionIndices && card.correctOptionIndices.length > 1
                 ? `Select ${card.correctOptionIndices.length}`
                 : "Multiple choice"
-              : "Flashcard"}
+              : card.type === "free_recall"
+                ? "Short / long answer"
+                : "Flashcard"}
           </p>
           <h1 className="mb-6 text-lg font-semibold leading-snug text-gray-900">{card.front}</h1>
 
@@ -484,7 +558,7 @@ export function SessionQuiz({
           )}
 
           {/* ── Flashcard question ───────────────────────────────────── */}
-          {card.type !== "mcq" && cardState.phase === "question" && (
+          {card.type === "flashcard" && cardState.phase === "question" && (
             <div className="text-center">
               <button
                 onClick={handleReveal}
@@ -496,7 +570,7 @@ export function SessionQuiz({
           )}
 
           {/* ── Flashcard revealed ───────────────────────────────────── */}
-          {card.type !== "mcq" && cardState.phase === "revealed" && (
+          {card.type === "flashcard" && cardState.phase === "revealed" && (
             <>
               <div className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
                 <p className="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-500">
@@ -524,13 +598,54 @@ export function SessionQuiz({
             </>
           )}
 
-          {/* ── Flashcard result ─────────────────────────────────────── */}
+          {/* ── Flashcard / free-recall result ───────────────────────── */}
           {card.type !== "mcq" && cardState.phase === "result" && (
             <FlashcardResult
               passed={cardState.passed}
               nextScheduledAt={cardState.nextScheduledAt}
               onNext={handleNext}
               isLastCard={isLastCard}
+            />
+          )}
+
+          {/* ── Free-recall: question ────────────────────────────────── */}
+          {card.type === "free_recall" && cardState.phase === "question" && (
+            <div>
+              <label
+                htmlFor="free-recall-answer"
+                className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500"
+              >
+                Your answer
+              </label>
+              <textarea
+                id="free-recall-answer"
+                value={freeRecallDraft}
+                onChange={(e) => setFreeRecallDraft(e.target.value)}
+                placeholder="Type your answer in your own words…"
+                rows={6}
+                disabled={isPending}
+                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm leading-relaxed text-gray-800 outline-none placeholder:text-gray-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 disabled:opacity-60"
+              />
+              <p className="mt-2 text-xs text-gray-400">
+                Your answer is graded by checking for the key concepts. You can override the grading
+                if it gets it wrong.
+              </p>
+              <button
+                onClick={handleFreeRecallSubmit}
+                disabled={isPending || freeRecallDraft.trim().length === 0}
+                className="mt-4 w-full rounded-lg bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {isPending ? "Grading…" : "Submit answer"}
+              </button>
+            </div>
+          )}
+
+          {/* ── Free-recall: graded ──────────────────────────────────── */}
+          {card.type === "free_recall" && cardState.phase === "graded" && (
+            <FreeRecallGradeView
+              grade={cardState.grade}
+              isPending={isPending}
+              onConfirm={handleFreeRecallConfirm}
             />
           )}
         </div>
@@ -653,5 +768,98 @@ function FlashcardResult({ passed, nextScheduledAt, onNext, isLastCard }: Flashc
         {isLastCard ? "Finish session" : "Next card"}
       </button>
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Free-recall grade view — shows keyword-overlap feedback + the model answer
+// and lets the learner override the auto-grade. The auto-grade is a hint, not
+// the final word: the learner's self-assessment is what gets persisted.
+// ---------------------------------------------------------------------------
+
+interface FreeRecallGradeViewProps {
+  grade: FreeRecallGrade;
+  isPending: boolean;
+  onConfirm: (passed: boolean) => void;
+}
+
+function FreeRecallGradeView({ grade, isPending, onConfirm }: FreeRecallGradeViewProps) {
+  const { matchedKeywords, missingKeywords, suggestedPassed, modelAnswer, userAnswer } = grade;
+  const totalKeywords = matchedKeywords.length + missingKeywords.length;
+
+  return (
+    <div>
+      <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+          Your answer
+        </p>
+        <p className="whitespace-pre-wrap text-sm text-gray-800">{userAnswer}</p>
+      </div>
+
+      <div className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+        <p className="mb-1 text-xs font-medium uppercase tracking-wide text-indigo-500">
+          Model answer
+        </p>
+        <p className="whitespace-pre-wrap text-sm text-gray-800">{modelAnswer}</p>
+      </div>
+
+      {totalKeywords > 0 && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
+            Key concepts ({matchedKeywords.length}/{totalKeywords} found)
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {matchedKeywords.map((kw) => (
+              <span
+                key={`match-${kw}`}
+                className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700"
+              >
+                <span aria-hidden="true">✓</span>
+                {kw}
+              </span>
+            ))}
+            {missingKeywords.map((kw) => (
+              <span
+                key={`miss-${kw}`}
+                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+              >
+                <span aria-hidden="true">○</span>
+                {kw}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <p className="mb-3 text-sm font-medium text-gray-700">
+        {suggestedPassed
+          ? "Looks like you got this — confirm if you'd grade yourself correct."
+          : "The grader didn't see all the key concepts. How would you grade yourself?"}
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={() => onConfirm(true)}
+          disabled={isPending}
+          className={`flex-1 rounded-lg border px-4 py-3 font-medium transition-colors disabled:opacity-50 ${
+            suggestedPassed
+              ? "border-green-300 bg-green-100 text-green-900 hover:bg-green-200"
+              : "border-green-200 bg-green-50 text-green-800 hover:bg-green-100"
+          }`}
+        >
+          I got it right
+        </button>
+        <button
+          onClick={() => onConfirm(false)}
+          disabled={isPending}
+          className={`flex-1 rounded-lg border px-4 py-3 font-medium transition-colors disabled:opacity-50 ${
+            !suggestedPassed
+              ? "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200"
+              : "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100"
+          }`}
+        >
+          I missed it
+        </button>
+      </div>
+    </div>
   );
 }

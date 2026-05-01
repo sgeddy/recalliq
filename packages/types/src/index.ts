@@ -63,6 +63,9 @@ export interface Card {
   back: string;
   options: string[] | null;
   correctOptionIndex: number | null;
+  correctOptionIndices: number[] | null;
+  // Free-recall grading hints — key terms or phrases the answer should contain.
+  acceptableAnswers: string[] | null;
   tags: string[];
   createdAt: Date;
 }
@@ -118,6 +121,9 @@ export interface GeneratedCard {
   correctOptionIndex: number | null;
   // Multi-select questions (e.g., "Select TWO"): array of correct indices
   correctOptionIndices: number[] | null;
+  // Free-recall (short/long answer): list of key terms or phrases the user's
+  // answer should contain. Server-side grading checks for keyword overlap.
+  acceptableAnswers: string[] | null;
   tags: string[];
 }
 

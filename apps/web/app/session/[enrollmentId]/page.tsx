@@ -11,10 +11,13 @@ export interface SessionCard {
   cardId: string;
   type: "flashcard" | "mcq" | "free_recall";
   front: string;
+  // Empty string for free_recall cards — the model answer is fetched from the
+  // grade endpoint after the user submits, so it can't be peeked at up front.
   back: string;
   options: string[] | null;
   correctOptionIndex: number | null;
   correctOptionIndices: number[] | null;
+  acceptableAnswers: string[] | null;
 }
 
 interface SessionData {

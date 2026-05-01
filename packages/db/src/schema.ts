@@ -137,6 +137,9 @@ export const cards = pgTable(
     correctOptionIndex: integer("correct_option_index"),
     // For "Select TWO" questions: array of correct option indices. Takes precedence over correctOptionIndex.
     correctOptionIndices: jsonb("correct_option_indices").$type<number[]>(),
+    // Free-recall (short/long answer) cards: list of expected key terms or phrases used
+    // for keyword-overlap grading. Null for MCQ / flashcard cards.
+    acceptableAnswers: jsonb("acceptable_answers").$type<string[]>(),
     tags: text("tags")
       .array()
       .notNull()
